@@ -1,471 +1,101 @@
-# Fighting Herwig Bootstrap
+# Herwig7 Installation Guide for macOS (Apple Silicon)
 
-This repository contains a compiled and functional version of Herwig7 bootstrapped installation, aiming to document steps that were needed to make the installation succeed on Mac OS 15.7.2, Apple M4 chip device. 
+This repository documents a successful Herwig7 bootstrap installation on macOS 15.7.2 (Apple M4), providing working solutions to common compilation issues.
 
-Authors: Mohamed Aly (mohamed.aly@cern.ch), Karim Kandeel (karim.kandeel@cern.ch)
+**Authors:** Mohamed Aly (mohamed.aly@cern.ch), Karim Kandeel (karim.kandeel@cern.ch)
 
-## Installation directory
+## Table of Contents
 
-Create a new directory to house herwig installation on your device. We refer to this as <my_herwig> from hereonafter.
+- [Quick Start (Recommended)](#quick-start-recommended)
+- [Prerequisites](#prerequisites)
+- [Detailed Installation Steps](#detailed-installation-steps)
+  - [1. Installation Directory Setup](#1-installation-directory-setup)
+  - [2. Python Environment Setup](#2-python-environment-setup)
+  - [3. Installing Dependencies via Homebrew](#3-installing-dependencies-via-homebrew)
+  - [4. Running the Bootstrap Script](#4-running-the-bootstrap-script)
+  - [5. Manual GoSAM Compilation (if needed)](#5-manual-gosam-compilation-if-needed)
+- [Common Errors and Solutions](#common-errors-and-solutions)
+  - [FastJet Compilation Error](#fastjet-compilation-error)
+  - [CMake Version Compatibility](#cmake-version-compatibility)
+  - [LHAPDF Python Configuration](#lhapdf-python-configuration)
+  - [RIVET and YODA Python Issues](#rivet-and-yoda-python-issues)
+  - [Boost Linking Errors](#boost-linking-errors)
+  - [ThePEG Fortran Compilation](#thepeg-fortran-compilation)
+  - [qgraf Missing bin Directory](#qgraf-missing-bin-directory)
+  - [GSL dylib Version Mismatch](#gsl-dylib-version-mismatch)
+- [Installed Versions](#installed-versions)
 
-```
-mkdir /path/to/<my_herwig>
-cd /path/to/<my_herwig>
-```
+---
 
-To visualise directory structure, we recomment you also install `tree`:
-```
-brew install tree
-```
+## Quick Start (Recommended)
 
-## Python
+**This is the fastest way to get Herwig7 running.** After encountering numerous compilation issues, we found this workflow to be the most stable.
 
-The compilation was carried out by using a python virtual environment set by `uv`:
-
-0. If you don't have `uv`, install with
-
-```
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-1. Initialise a `uv` project:
-```
-uv init
-```
-2. Set the python version to `3.9` (this is chosen arbitrarily given experience with installing other HEP event generators):
-```
-uv python install 3.9
-```
-
-This installed `3.9.6` for me, but the process worked also with `3.9.24`.
-
-3. Create a virtual environment:
-
-```
-uv venv
-```
-
-3. Check if you have a `venv` created from `uv` in `.venv/` and activate it
+### Complete Installation Commands
 
 ```bash
-tree ./venv
-```
-returns:
+# 1. Tap HEP packages repository
+brew tap davidchall/hep
 
-```bash
-.venv/
-├── bin
-└── lib
-    └── python3.9
-        └── site-packages
-```
-Then run:
-
-```bash
-source .venv/bin/activate
-```
-
-to enter the environment. This environment is only valid in the directory where you created it.
-
-4. Check python version and binaries:
-
-```bash
-which python && python --version
-```
-returns:
-
-```bash
-/path/to/<my_herwig>/.venv/bin/python
-Python 3.9.24
-```
-
-5. Install some packages we will need:
-
-```bash
-uv add six cython lib 
-```
-
-6. Sync installations
-```bash
-uv sync
-```
-
-7. Check what we have
-```bash
-tree .venv/
-```
-
-which gives:
-
-```bash
-.venv/
-├── bin
-└── lib
-    └── python3.9
-        └── site-packages
-            ├── Cython
-            │   ├── Build
-            │   │   └── Tests
-            │   ├── Compiler
-            │   │   └── Tests
-            │   ├── Debugger
-            │   │   └── Tests
-            │   ├── Distutils
-            │   ├── Includes
-            │   │   ├── cpython
-            │   │   ├── libc
-            │   │   ├── libcpp
-            │   │   ├── numpy
-            │   │   └── posix
-            │   ├── Plex
-            │   ├── Runtime
-            │   ├── Tempita
-            │   ├── Tests
-            │   └── Utility
-            ├── cython-3.2.0.dist-info
-            ├── lib
-            ├── lib-4.0.0.dist-info
-            ├── pyximport
-            └── six-1.17.0.dist-info
-
-29 directories
-```
-
-**Now our python environment is set and we can proceed with installation!**
-
-## The Herwig Bootstrap script
-
-```bash
-wget https://herwig.hepforge.org/downloads/herwig-bootstrap
-```
-
-will install the bootstrapping script in your current directory. This is a `python` script which organises the installation.
-
-It is meant to be ran as an executable, so we need to set permission:
-
-```
-chmod +x herwig-bootstrap
-```
-
-The Herwig docs suggest this should run with:
-
-```bash
-
-./herwig-bootstrap -j4 /path/to/<my_herwig>
-```
-
-**but this didn't go well, with errors everywhere.**
-
-### Errors we encountered:
-- In compiling `fastjet` library, we encountered compilation erros regarding non-existent class attrbibutes in a print statement:
-
-    ```bash
-    ./ProtoJet.hpp:198:51: error: no member named '_Et' in 'ProtoJet<Item>'
-    198 |   os<<"y phi Et = ("<<_y<<", "<<_phi<<", "<<this->_Et<<")"<<std::endl;
-        |   
-    ```
-
-    I was able to circumvent this by commenting the problematic line in:
-    ```
-    src/fastjet-3.4.0/plugins/D0RunIICone/ProtoJet.hpp
-    ```
-
-    which in-theory is harmless (it is just a print out), but shouldn't happen.
-
-- Our `cmake` version was `4.1.2` the latest from brew, obtained with:
-    ```
-    brew install cmake
-    ```
-    This did not make `HEPMC3` installation happy:
-    
-    ```bash
-    cmake /Users/user/phd/herwig/./src/HepMC3-3.2.5 -DCMAKE_INSTALL_PREFIX=/Users/user/phd/herwig/. -DHEPMC3_ENABLE_ROOTIO:BOOL=OFF -DHEPMC3_ENABLE_PYTHON:BOOL=OFF
-    CMake Error at CMakeLists.txt:1 (cmake_minimum_required):
-    Compatibility with CMake < 3.5 has been removed from CMake.
-
-    Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
-    to tell CMake that the project requires at least <min> but has been updated
-    to work with policies introduced by <max> or earlier.
-
-    Or, add -DCMAKE_POLICY_VERSION_MINIMUM=3.5 to try configuring anyway.
-    ```
-
-    so we took the adivce and tried to configure anyway:
-
-    ```bash
-    export CMAKE_POLICY_VERSION_MINIMUM=3.5
-    ```
-
-    This, again, move us forward.
-
-- `lhapdf` installtion then failed, because it didn't propagate correctly our python environment, and couldn't find the `lib` library:
-    ```bash
-    checking for Python include path... -I/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/include/python3.9
-    checking for Python library path... -L/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib -lpython3.9
-    checking for Python site-packages path... /Users/user/phd/herwig/.venv/lib/python3.9/site-packages
-    checking for Python platform specific site-packages path... 
-    checking python extra libraries... -ldl -lSystem  -framework CoreFoundation 
-    checking python extra linking flags... -Wl,-stack_size,1000000  -framework CoreFoundation Python3.framework/Versions/3.9/Python3
-    checking consistency of all components of python development environment... no
-    configure: error: in `/Users/user/phd/herwig/src/LHAPDF-6.5.3':
-    configure: error: 
-    Could not link test program to Python. Maybe the main Python library has been
-    installed in some non-standard library path. If so, pass it to configure,
-    via the LIBS environment variable.
-    Example: ./configure LIBS="-L/usr/non-standard-path/python/lib"
-    ============================================================================
-    ERROR!
-    You probably have to install the development version of the Python package
-    for your distribution.  The exact name of this package varies among them.
-    ============================================================================
-
-    See `config.log' for more details
-    ```
-
-    This also should be fixed. It occured if we try to compile `lhapdf` inside `src/` ourselves too, so the issue is in the `lhapdf` `MakeFile` and how `Python` is configured for it.
-
-    The solution here was to install `lhapdf` from `brew`:
-
-    ```
-    brew install lhapdf
-    ```
-
-    **Note: if you don't have `davidchall/hep` tapped with brew, you need to first run:
-    ```
-    brew tap davidchall/hep
-    ```
-
-    Then, to tell the bootstrap script to use this `lhapdf` installtion, we ran:
-
-    ```bash
-    ./herwig-bootstrap -j 8 --lhapdf-location=/opt/homebrew/opt/lhapdf/ .
-    ```
-- We immediatly ran into the same error with configuring `python` for installting both `rivet` and `yoda`. So we installed both with brew and continued:
-    ```bash
-    brew install davidchall/hep/yoda # just install yoda didn't work
-    brew install --formula rivet # just install rivet didn't work
-    ./herwig-bootstrap -j 8 --with-lhapdf=/opt/homebrew/opt/lhapdf/ --with-yoda=/opt/homebrew/Cellar/yoda/1.9.10/ --with-rivet=/opt/homebrew/Cellar/rivet/3.1.10/ .
-    ```
-
-- `boost` complained about linking erros, so we also installed it with `brew`. At this point, we decided it is best to install also `gsl` with brew:
-    ```
-    brew install boost gsl
-    ./herwig-bootstrap -j 8 --with-lhapdf=/opt/homebrew/opt/lhapdf/ --with-yoda=/opt/homebrew/Cellar/yoda/1.9.10/ --with-rivet=/opt/homebrew/Cellar/rivet/3.1.10/ --with-boost=/opt/homebrew/Cellar/boost/1.89.0/ --with-gsl=/opt/homebrew/Cellar/gsl/2.8/ .
-    ```
-
-- `THEPEG` the couldn't compile wit the default `fortran` flags, raising the error:
-    ```fortran
-    Making all in Looptools
-    PPF77    D/libHwLooptoolsXFC_la-D0funcC.lo
-    PPF77    D/libHwLooptoolsXFC_la-D0func.lo
-    PPF77    util/libHwLooptoolsXFC_la-ffcxs3.lo
-    PPF77    util/libHwLooptoolsXFC_la-ffcxs4.lo
-    PPF77    util/libHwLooptoolsXFC_la-ffbndc.lo
-    PPF77    util/libHwLooptoolsXFC_la-ffdcxs.lo
-    PPF77    E/libHwLooptoolsCFC_la-Eget.lo
-    PPF77    E/libHwLooptoolsCFC_la-E0func.lo
-    D/D0func.F:486:35:
-
-    486 |         parameter (nz2 = -2147483648)   ! O'20000000000'
-        |                                            1
-    Error: Integer too big for its kind at (1). This check can be disabled with the option '-fno-range-check'
-    D/D0func.F:491:27:
-
-    491 |         parameter (nz2p1234 = nz2 + p1234)
-        |                                  1
-    Error: Parameter 'nz2' at (1) has not been declared or is a variable, which does not reduce to a constant expression
-    D/D0func.F:495:27:
-
-    495 |         parameter (nz2p1243 = nz2 + p1243)
-        |                                  1
-    Error: Parameter 'nz2' at (1) has not been declared or is a variable, which does not reduce to a constant expression
-    D/D0func.F:499:27:
-
-    499 |         parameter (nz2p2134 = nz2 + p2134)
-        |                                  1
-    Error: Parameter 'nz2' at (1) has not been declared or is a variable, which does not reduce to a constant expression
-    D/D0func.F:503:27:
-
-    503 |         parameter (nz2p2143 = nz2 + p2143)
-        |                                  1
-    Error: Parameter 'nz2' at (1) has not been declared or is a variable, which does not reduce to a constant expression
-    D/D0func.F:507:27:
-
-    507 |         parameter (nz2p3214 = nz2 + p3214)
-        |                                  1
-    Error: Parameter 'nz2' at (1) has not been declared or is a variable, which does not reduce to a constant expression
-    D/D0func.F:511:27:
-
-    511 |         parameter (nz2p4213 = nz2 + p4213)
-        |                                  1
-    Error: Parameter 'nz2' at (1) has not been declared or is a variable, which does not reduce to a constant expression
-    D/D0func.F:525:29:
-
-    525 |      &    nz3p1234, nz2p1234, nz3p2143, nz2p1234,
-        |                             1
-    Error: Symbol 'nz2p1234' must be a PARAMETER in DATA statement at (1)
-    D/D0funcC.F:428:35:
-
-    428 |         parameter (nz2 = -2147483648)   ! O'20000000000'
-        |                                            1
-    Error: Integer too big for its kind at (1). This check can be disabled with the option '-fno-range-check'
-    D/D0funcC.F:433:27:
-
-    433 |         parameter (nz2p1234 = nz2 + p1234)
-        |                                  1
-    Error: Parameter 'nz2' at (1) has not been declared or is a variable, which does not reduce to a constant expression
-    D/D0funcC.F:437:27:
-
-    437 |         parameter (nz2p1243 = nz2 + p1243)
-        |                                  1
-    Error: Parameter 'nz2' at (1) has not been declared or is a variable, which does not reduce to a constant expression
-    D/D0funcC.F:441:27:
-
-    441 |         parameter (nz2p2134 = nz2 + p2134)
-        |                                  1
-    Error: Parameter 'nz2' at (1) has not been declared or is a variable, which does not reduce to a constant expression
-    D/D0funcC.F:445:27:
-
-    445 |         parameter (nz2p2143 = nz2 + p2143)
-        |                                  1
-    Error: Parameter 'nz2' at (1) has not been declared or is a variable, which does not reduce to a constant expression
-    D/D0funcC.F:449:27:
-
-    449 |         parameter (nz2p3214 = nz2 + p3214)
-        |                                  1
-    Error: Parameter 'nz2' at (1) has not been declared or is a variable, which does not reduce to a constant expression
-    D/D0funcC.F:453:27:
-
-    453 |         parameter (nz2p4213 = nz2 + p4213)
-        |                                  1
-    Error: Parameter 'nz2' at (1) has not been declared or is a variable, which does not reduce to a constant expression
-    D/D0funcC.F:467:29:
-
-    467 |      &    nz3p1234, nz2p1234, nz3p2143, nz2p1234,
-        |                             1
-    Error: Symbol 'nz2p1234' must be a PARAMETER in DATA statement at (1)
-    D/D0funcC.F:951:39:
-
-    711 |      &    cLi2omrat2(q3, s, q4, m4) - pi6 +
-        |                              2         
-    ......
-    951 |      &             cLi2omrat2(q4, s, -1D0, -1D0)
-        |                                       1
-    Warning: Type mismatch between actual argument at (1) and actual argument at (2) (REAL(8)/COMPLEX(8)).
-    D/D0funcC.F:951:45:
-
-    711 |      &    cLi2omrat2(q3, s, q4, m4) - pi6 +
-        |                                  2           
-    ......
-    951 |      &             cLi2omrat2(q4, s, -1D0, -1D0)
-        |                                             1
-    Warning: Type mismatch between actual argument at (1) and actual argument at (2) (REAL(8)/COMPLEX(8)).
-    D/D0func.F:1212:36:
-
-    858 |      &        2*(Li2omrat2(q2, s, q4, t) -
-        |                                    2       
-    ......
-    1212 |           dilogs = Li2omrat2(q3, t, x43(4), x43(2)) +
-        |                                           1
-    Warning: Type mismatch between actual argument at (1) and actual argument at (2) (COMPLEX(8)/REAL(8)).
-    D/D0func.F:1212:44:
-
-    858 |      &        2*(Li2omrat2(q2, s, q4, t) -
-        |                                        2           
-    ......
-    1212 |           dilogs = Li2omrat2(q3, t, x43(4), x43(2)) +
-        |                                                   1
-    Warning: Type mismatch between actual argument at (1) and actual argument at (2) (COMPLEX(8)/REAL(8)).
-    make[1]: *** [D/libHwLooptoolsXFC_la-D0funcC.lo] Error 1
-    make[1]: *** Waiting for unfinished jobs....
-    make[1]: *** [D/libHwLooptoolsXFC_la-D0func.lo] Error 1
-    make: *** [all-recursive] Error 1
-    ```
-
-    In particular, the following starts the error stack:
-
-    ```fortran
-    Error: Integer too big for its kind at (1). This check can be disabled with the option '-fno-range-check'
-    ```
-
-    which we were able to fix by passing the flag during the fortran compilation in the bootstrap script that we are running.
-    To do this, we modify the function:
-    ```python
-    def compile(config_flags=[]) :
-    if os.access('Makefile',os.R_OK):
-        print('Makefile exists, skipping configure')
-    else:
-        if not os.access('configure', os.X_OK):
-            os.chmod('configure', 0o755)
-        flags = ["./configure","--prefix="+base_dir]
-        flags += config_flags
-        check_call(flags)
-    check_call(["make","-s","-j%s" % opts.ncore, "FFLAGS=-g -std=legacy -ffixed-line-length-none -fno-range-check", "FCFLAGS=-g -std=legacy -ffixed-line-length-none -fno-range-check"])
-
-    # TODO ?? skip here if some file already exists in /lib or /bin ??
-    check_call(["make","-s","install"])
-    os.chdir(src_dir)
-    ```
-
-    and in particular the line:
-
-    ```python
-    check_call(["make","-s","-j%s" % opts.ncore]) 
-    ```
-    to:
-    ```python
-    check_call(["make","-s","-j%s" % opts.ncore, "FFLAGS=-g -std=legacy -ffixed-line-length-none -fno-range-check", "FCFLAGS=-g -std=legacy -ffixed-line-length-none -fno-range-check"])
-    ```
-
-    then, clean the build:
-    ```bash
-    cd src/Herwig-7.3.0/
-    make clean
-    ```
-    and running again:
-
-    ```
-    ./herwig-bootstrap -j 8 --with-lhapdf=/opt/homebrew/opt/lhapdf/ --with-yoda=/opt/homebrew/Cellar/yoda/1.9.10/ --with-rivet=/opt/homebrew/Cellar/rivet/3.1.10/ .
-    ```
-    and this finally finishes the compile:
-    ```bash
-    ################ /  / ^^/ ##########################
-    ############### /--/   / ###########################
-    ############## /  /   / ############################
-
-    Herwig 7 bootstrap was successful.
-
-    $ source bin/activate
-
-        activates all required environment variables.
-
-    $ deactivate
-
-        returns to the original environment variables.
-    ```
-
-## TL;DR
-
-We found the following steps to be most stable to get everything running without too many hacks (while still hacky):
-
-```bash
+# 2. Install all dependencies via Homebrew
 brew install thepeg lhapdf rivet yoda boost gsl fastjet
-mkdir bin # needed for qgraf error, see below
-ln -s /opt/homebrew/opt/gsl/lib/libgsl.28.dylib /opt/homebrew/opt/gsl/lib/libgsl.27.dylib # needed for thepeg-gsl dylib incompatibility, see below
-./herwig-bootstrap -j8 --with-lhapdf=/opt/homebrew/opt/lhapdf/ --with-yoda=/opt/homebrew/Cellar/yoda/1.9.10/ --with-rivet=/opt/homebrew/Cellar/rivet/3.1.10/ --with-boost=/opt/homebrew/Cellar/boost/1.89.0/ --with-gsl=/opt/homebrew/Cellar/gsl/2.8/ --with-thepeg=/opt/homebrew/Cellar/thepeg/2.3.0_1/ --with-hepmc=/opt/homebrew/Cellar/hepmc3/3.2.7_1/ --with-fastjet /opt/homebrew/Cellar/fastjet/3.4.3/ .
-````
 
-The above erros when installing `gosam`, which we fixed by manual compilation of `gosam`:
+# 3. Create and setup installation directory
+mkdir -p ~/herwig_installation  # or your preferred path
+cd ~/herwig_installation
+
+# 4. Download bootstrap script
+wget https://herwig.hepforge.org/downloads/herwig-bootstrap
+chmod +x herwig-bootstrap
+
+# 5. Create bin directory (prevents qgraf error)
+mkdir bin
+
+# 6. Fix GSL dylib version mismatch
+ln -s /opt/homebrew/opt/gsl/lib/libgsl.28.dylib /opt/homebrew/opt/gsl/lib/libgsl.27.dylib
+
+# 7. Setup Python environment with uv
+curl -LsSf https://astral.sh/uv/install.sh | sh  # if uv not installed
+uv init
+uv python install 3.9
+uv venv
+source .venv/bin/activate
+uv add six cython lib
+uv sync
+
+# 8. Run bootstrap (adjust version numbers to match your brew installations)
+./herwig-bootstrap -j8 \
+  --with-lhapdf=/opt/homebrew/opt/lhapdf/ \
+  --with-yoda=/opt/homebrew/Cellar/yoda/1.9.10/ \
+  --with-rivet=/opt/homebrew/Cellar/rivet/3.1.10/ \
+  --with-boost=/opt/homebrew/Cellar/boost/1.89.0/ \
+  --with-gsl=/opt/homebrew/Cellar/gsl/2.8/ \
+  --with-thepeg=/opt/homebrew/Cellar/thepeg/2.3.0_1/ \
+  --with-hepmc=/opt/homebrew/Cellar/hepmc3/3.2.7_1/ \
+  --with-fastjet=/opt/homebrew/Cellar/fastjet/3.4.3/ .
+```
+
+**Important:** Version numbers in the bootstrap command (e.g., `yoda/1.9.10`) must match your installed versions. Check with:
+```bash
+brew info <package>
+```
+
+### If GoSAM Fails
+
+If the bootstrap fails during GoSAM compilation:
 
 ```bash
-cd src/gosam-contrib-2.0 
+cd src/gosam-contrib-2.0
 make clean
 make -j8
 cd ../../
-./herwig-bootstrap -j8 --with-lhapdf=/opt/homebrew/opt/lhapdf/ --with-yoda=/opt/homebrew/Cellar/yoda/1.9.10/ --with-rivet=/opt/homebrew/Cellar/rivet/3.1.10/ --with-boost=/opt/homebrew/Cellar/boost/1.89.0/ --with-gsl=/opt/homebrew/Cellar/gsl/2.8/ --with-thepeg=/opt/homebrew/Cellar/thepeg/2.3.0_1/ --with-hepmc=/opt/homebrew/Cellar/hepmc3/3.2.7_1/ --with-fastjet /opt/homebrew/Cellar/fastjet/3.4.3/ .
+
+# Re-run the bootstrap command from step 8 above
 ```
 
-which worked finally:
+### Success Indicator
+
+You should see:
 
 ```bash
 ################ /  / ^^/ ##########################
@@ -475,51 +105,474 @@ which worked finally:
 Herwig 7 bootstrap was successful.
 
 $ source bin/activate
-
     activates all required environment variables.
 
 $ deactivate
-
     returns to the original environment variables.
 ```
 
-### The errors in TL;DR
+---
 
-- `qgraf` without manually creating `bin` directory:
-    ```bash
-    Extracted qgraf-3.4.2 exists already
-    /Users/user/phd/herwig_gh/src
-    /Users/user/phd/herwig_gh/src/qgraf-3.4.2
-    /opt/homebrew/bin/gfortran qgraf-3.4.2.f -o qgraf -O2
-    Traceback (most recent call last):
-    File "/Users/user/.local/share/uv/python/cpython-3.9.24-macos-aarch64-none/lib/python3.9/shutil.py", line 825, in move
-        os.rename(src, real_dst)
-    FileNotFoundError: [Errno 2] No such file or directory: 'qgraf' -> '/Users/user/phd/herwig_gh/./bin/qgraf'
-    ```
+## Prerequisites
 
-- `dylib` error was encountered when using the `brew` version (latest at time, see `versions` section) of `thepeg`:
-    ```
-     /opt/homebrew/bin/gmkdir -p '/Users/user/phd/herwig_gh/./share/Herwig'
-    /usr/bin/install -c -m 644 Makefile-UserModules '/Users/user/phd/herwig_gh/./share/Herwig'
-    Creating repository
-    dyld[71554]: Library not loaded: /opt/homebrew/opt/gsl/lib/libgsl.27.dylib
-    Referenced from: <CDEF1F71-8686-3192-B087-C339CEA19970> /opt/homebrew/Cellar/thepeg/2.3.0_1/lib/ThePEG/libThePEG.30.dylib
-    Reason: tried: '/Users/user/phd/herwig_gh/src/Herwig-7.3.0/API/.libs/libgsl.27.dylib' (no such file), '/opt/homebrew/opt/gsl/lib/libgsl.27.dylib' (no such file), '/System/Volumes/Preboot/Cryptexes/OS/opt/homebrew/opt/gsl/lib/libgsl.27.dylib' (no such file), '/opt/homebrew/opt/gsl/lib/libgsl.27.dylib' (no such file), '/Users/user/phd/herwig_gh/src/Herwig-7.3.0/API/.libs/libgsl.27.dylib' (no such file), '/opt/homebrew/Cellar/gsl/2.8/lib/libgsl.27.dylib' (no such file), '/System/Volumes/Preboot/Cryptexes/OS/opt/homebrew/Cellar/gsl/2.8/lib/libgsl.27.dylib' (no such file), '/opt/homebrew/Cellar/gsl/2.8/lib/libgsl.27.dylib' (no such file)
-    make[5]: *** [install-data-hook] Abort trap: 6
-    make[4]: *** [install-data-am] Error 2
-    make[3]: *** [install-am] Error 2
-    make[2]: *** [install-recursive] Error 1
-    make[1]: *** [install] Error 2
-    make: *** [install-recursive] Error 1
-    ```
+Before starting the installation, ensure you have the following:
 
-    which occurs because `thepeg` looks for an older version of `dylib`  in the `gsl` installtion than the one coming from the `brew` version of `gsl` (again, latest at the time).
+### System Requirements
+- **OS:** macOS 15.7.2 or similar (tested on Apple M4)
+- **Architecture:** Apple Silicon (ARM64)
+- **Xcode Command Line Tools:** Install with `xcode-select --install`
+- **Disk Space:** ~5-10 GB for source files and compiled binaries
 
-    which was magically fixed by a symoblic link to fool the compiler:
-    ```
-    ln -s /opt/homebrew/opt/gsl/lib/libgsl.28.dylib /opt/homebrew/opt/gsl/lib/libgsl.27.dylib 
-    ```
+### Package Manager
+- **Homebrew:** Install from [brew.sh](https://brew.sh) if not already installed
+- **HEP tap:** Required for physics packages: `brew tap davidchall/hep`
 
-# Versions
-This section documents all the versions of tools we installed with `brew`:
+### Essential Tools
+- **wget:** `brew install wget` (for downloading bootstrap script)
+- **tree (optional):** `brew install tree` (helpful for visualizing directory structure)
 
+### Python Environment
+- **uv:** Fast Python package/environment manager
+  - Install: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+  - Why uv? Provides more reliable environment management than conda/virtualenv for this workflow
+- **Python 3.9:** Managed via uv (tested with 3.9.6 and 3.9.24)
+  - Why 3.9? Chosen based on compatibility with other HEP event generators
+
+### Why Install Dependencies via Homebrew?
+
+Building dependencies from source encounters numerous compilation errors on Apple Silicon:
+- **Python configuration issues:** LHAPDF, RIVET, and YODA fail to detect virtual environments
+- **Fortran compatibility:** ThePEG requires specific compiler flags
+- **Linking errors:** Boost and other libraries have complex dependency chains
+
+Installing pre-built binaries via Homebrew avoids these issues entirely.
+
+---
+
+## Detailed Installation Steps
+
+This section provides a step-by-step breakdown with explanations.
+
+### 1. Installation Directory Setup
+
+Create a dedicated directory for your Herwig installation:
+
+```bash
+mkdir -p ~/herwig_installation  # Example path
+cd ~/herwig_installation
+```
+
+**Note:** Throughout this guide, we refer to this as `<my_herwig>`. Replace with your actual path.
+
+**Optional - visualize directory structure:**
+```bash
+brew install tree  # if not already installed
+tree ./
+```
+
+### 2. Python Environment Setup
+
+We use `uv` to manage a Python 3.9 virtual environment.
+
+**Install uv (if not already installed):**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**Create virtual environment:**
+```bash
+cd <my_herwig>  # Your installation directory
+
+# Initialize uv project
+uv init
+
+# Install Python 3.9
+uv python install 3.9
+
+# Create virtual environment
+uv venv
+
+# Activate the environment
+source .venv/bin/activate
+```
+
+**Verify Python setup:**
+```bash
+which python && python --version
+# Expected output:
+# <my_herwig>/.venv/bin/python
+# Python 3.9.24 (or 3.9.6)
+```
+
+**Install required Python packages:**
+```bash
+uv add six cython lib
+uv sync
+```
+
+**Expected directory structure:**
+```bash
+.venv/
+├── bin
+└── lib
+    └── python3.9
+        └── site-packages
+            ├── Cython/
+            ├── lib/
+            ├── pyximport/
+            └── six-*.dist-info/
+```
+
+### 3. Installing Dependencies via Homebrew
+
+Install all required HEP dependencies using Homebrew:
+
+```bash
+# Tap the HEP repository (if not already done)
+brew tap davidchall/hep
+
+# Install all dependencies
+brew install thepeg lhapdf rivet yoda boost gsl fastjet
+```
+
+**Note:** HepMC3 will be installed automatically as a dependency.
+
+**Verify installation:**
+```bash
+brew list --versions thepeg yoda rivet gsl boost fastjet lhapdf
+```
+
+### 4. Running the Bootstrap Script
+
+**Download and prepare the bootstrap script:**
+```bash
+cd <my_herwig>
+wget https://herwig.hepforge.org/downloads/herwig-bootstrap
+chmod +x herwig-bootstrap
+```
+
+**Prepare environment (critical steps):**
+
+1. **Create bin directory** (prevents qgraf installation error):
+```bash
+mkdir bin
+```
+
+2. **Fix GSL dylib compatibility** (ThePEG expects libgsl.27, but Homebrew provides libgsl.28):
+```bash
+ln -s /opt/homebrew/opt/gsl/lib/libgsl.28.dylib \
+      /opt/homebrew/opt/gsl/lib/libgsl.27.dylib
+```
+
+**Run the bootstrap script:**
+```bash
+./herwig-bootstrap -j8 \
+  --with-lhapdf=/opt/homebrew/opt/lhapdf/ \
+  --with-yoda=/opt/homebrew/Cellar/yoda/1.9.10/ \
+  --with-rivet=/opt/homebrew/Cellar/rivet/3.1.10/ \
+  --with-boost=/opt/homebrew/Cellar/boost/1.89.0/ \
+  --with-gsl=/opt/homebrew/Cellar/gsl/2.8/ \
+  --with-thepeg=/opt/homebrew/Cellar/thepeg/2.3.0_1/ \
+  --with-hepmc=/opt/homebrew/Cellar/hepmc3/3.2.7_1/ \
+  --with-fastjet=/opt/homebrew/Cellar/fastjet/3.4.3/ .
+```
+
+**Important notes:**
+- The `-j8` flag uses 8 parallel jobs (adjust based on your CPU cores)
+- Version numbers in paths must match your installations (see [Installed Versions](#installed-versions))
+- Check installed versions with: `brew info <package_name>`
+- The final `.` specifies the current directory as installation target
+
+**Finding correct paths:**
+```bash
+# For packages in /opt/homebrew/opt/ (symlinks):
+brew --prefix lhapdf
+
+# For packages in Cellar (actual installations):
+brew info yoda | grep Cellar
+```
+
+### 5. Manual GoSAM Compilation (if needed)
+
+If bootstrap fails during GoSAM compilation:
+
+```bash
+cd src/gosam-contrib-2.0
+make clean
+make -j8
+cd ../../
+```
+
+Then re-run the bootstrap command from step 4.
+
+**Why this happens:** The GoSAM build system sometimes fails with parallel compilation. Manual compilation resolves race conditions.
+
+---
+
+## Common Errors and Solutions
+
+This section documents errors encountered when building dependencies from source. **If you follow the Quick Start, you should not encounter these errors.**
+
+### FastJet Compilation Error
+
+**Error:**
+```
+./ProtoJet.hpp:198:51: error: no member named '_Et' in 'ProtoJet<Item>'
+198 |   os<<"y phi Et = ("<<_y<<", "<<_phi<<", "<<this->_Et<<")"<<std::endl;
+```
+
+**Location:** `src/fastjet-3.4.0/plugins/D0RunIICone/ProtoJet.hpp:198`
+
+**Workaround:** Comment out the problematic print statement (harmless, only affects debug output).
+
+**Recommended solution:** Install FastJet via Homebrew: `brew install fastjet`
+
+---
+
+### CMake Version Compatibility
+
+**Error:**
+```
+CMake Error at CMakeLists.txt:1 (cmake_minimum_required):
+Compatibility with CMake < 3.5 has been removed from CMake.
+```
+
+**Cause:** Homebrew's CMake (4.1.2+) removed support for old version requirements in HepMC3.
+
+**Workaround:**
+```bash
+export CMAKE_POLICY_VERSION_MINIMUM=3.5
+```
+
+**Recommended solution:** Use Homebrew HepMC3: installed automatically with other dependencies.
+
+---
+
+### LHAPDF Python Configuration
+
+**Error:**
+```
+configure: error:
+Could not link test program to Python. Maybe the main Python library has been
+installed in some non-standard library path.
+```
+
+**Full error details:**
+```
+checking for Python include path... -I/Library/Developer/CommandLineTools/...
+checking python extra libraries... -ldl -lSystem  -framework CoreFoundation
+checking consistency of all components of python development environment... no
+```
+
+**Cause:** LHAPDF's configure script fails to detect the uv virtual environment's Python library.
+
+**Recommended solution:**
+```bash
+brew install lhapdf
+./herwig-bootstrap --with-lhapdf=/opt/homebrew/opt/lhapdf/ .
+```
+
+---
+
+### RIVET and YODA Python Issues
+
+**Error:** Same Python configuration issues as LHAPDF.
+
+**Recommended solution:**
+```bash
+brew tap davidchall/hep
+brew install davidchall/hep/yoda  # explicit tap specification needed
+brew install --formula rivet      # --formula flag needed
+```
+
+Then use `--with-yoda` and `--with-rivet` flags in bootstrap command.
+
+---
+
+### Boost Linking Errors
+
+**Error:** Boost library linking failures during compilation.
+
+**Recommended solution:**
+```bash
+brew install boost gsl
+```
+
+Then use `--with-boost` and `--with-gsl` flags in bootstrap command.
+
+---
+
+### ThePEG Fortran Compilation
+
+**Error:**
+```fortran
+D/D0func.F:486:35:
+486 |         parameter (nz2 = -2147483648)   ! O'20000000000'
+    |                                            1
+Error: Integer too big for its kind at (1). This check can be disabled with
+the option '-fno-range-check'
+```
+
+**Full error context:**
+```fortran
+D/D0func.F:491:27:
+491 |         parameter (nz2p1234 = nz2 + p1234)
+    |                                  1
+Error: Parameter 'nz2' at (1) has not been declared or is a variable, which
+does not reduce to a constant expression
+```
+
+**Cause:** Modern gfortran compilers on Apple Silicon are stricter about integer sizes in legacy Fortran code.
+
+**Workaround:** Modify `herwig-bootstrap` script's `compile()` function.
+
+Find this line:
+```python
+check_call(["make","-s","-j%s" % opts.ncore])
+```
+
+Replace with:
+```python
+check_call(["make", "-s", "-j%s" % opts.ncore,
+           "FFLAGS=-g -std=legacy -ffixed-line-length-none -fno-range-check",
+           "FCFLAGS=-g -std=legacy -ffixed-line-length-none -fno-range-check"])
+```
+
+Then clean and rebuild:
+```bash
+cd src/Herwig-7.3.0/
+make clean
+cd ../../
+./herwig-bootstrap ...  # re-run with same flags
+```
+
+**Recommended solution:** Use Homebrew ThePEG: `brew install thepeg`
+
+---
+
+### qgraf Missing bin Directory
+
+**Error:**
+```
+Traceback (most recent call last):
+  File ".../shutil.py", line 825, in move
+    os.rename(src, real_dst)
+FileNotFoundError: [Errno 2] No such file or directory: 'qgraf' -> '.../bin/qgraf'
+```
+
+**Cause:** Bootstrap script tries to move compiled qgraf binary to `bin/` before the directory exists.
+
+**Solution:** Create the directory before running bootstrap:
+```bash
+mkdir bin
+```
+
+---
+
+### GSL dylib Version Mismatch
+
+**Error:**
+```
+dyld[71554]: Library not loaded: /opt/homebrew/opt/gsl/lib/libgsl.27.dylib
+  Referenced from: <...> /opt/homebrew/Cellar/thepeg/2.3.0_1/lib/ThePEG/libThePEG.30.dylib
+  Reason: tried: '/opt/homebrew/opt/gsl/lib/libgsl.27.dylib' (no such file)
+```
+
+**Full error context:**
+```
+make[5]: *** [install-data-hook] Abort trap: 6
+make[4]: *** [install-data-am] Error 2
+make[3]: *** [install-am] Error 2
+make[2]: *** [install-recursive] Error 1
+make[1]: *** [install] Error 2
+make: *** [install-recursive] Error 1
+```
+
+**Cause:** ThePEG (from Homebrew) was compiled against libgsl.27.dylib, but current GSL provides libgsl.28.dylib.
+
+**Solution:** Create a symbolic link:
+```bash
+ln -s /opt/homebrew/opt/gsl/lib/libgsl.28.dylib \
+      /opt/homebrew/opt/gsl/lib/libgsl.27.dylib
+```
+
+---
+
+## Installed Versions
+
+This section documents the Homebrew package versions used in our successful installation:
+
+| Package  | Version    | Installation Notes                                    |
+|----------|------------|-------------------------------------------------------|
+| boost    | 1.89.0     | Standard Homebrew package                             |
+| fastjet  | 3.4.3      | Standard Homebrew package                             |
+| gsl      | 2.8        | Requires symlink (see below)                          |
+| rivet    | 3.1.10     | Install with `brew install --formula rivet`           |
+| thepeg   | 2.3.0_1    | Via `brew tap davidchall/hep`, requires GSL symlink   |
+| yoda     | 1.9.10     | Install with `brew install davidchall/hep/yoda`       |
+| lhapdf   | 6.5.4      | Via `brew install lhapdf`                             |
+| hepmc3   | 3.2.7_1    | Automatically installed as dependency                 |
+| Python   | 3.9.24     | Via uv (3.9.6 also tested and works)                  |
+
+**Check your installed versions:**
+```bash
+brew list --versions thepeg yoda rivet gsl boost fastjet lhapdf
+```
+
+**Important:** The version numbers in your bootstrap command paths (e.g., `/opt/homebrew/Cellar/yoda/1.9.10/`) must match your actual installed versions. Use `brew info <package>` to verify paths.
+
+### GSL Symlink Requirement
+
+ThePEG 2.3.0_1 was compiled against libgsl.27.dylib, but GSL 2.8 provides libgsl.28.dylib. Create a symlink to resolve this:
+
+```bash
+ln -s /opt/homebrew/opt/gsl/lib/libgsl.28.dylib \
+      /opt/homebrew/opt/gsl/lib/libgsl.27.dylib
+```
+
+---
+
+## Additional Notes
+
+### Understanding Bootstrap Flags
+
+- `-j8`: Use 8 parallel compilation jobs (adjust based on CPU cores)
+- `--with-<package>=<path>`: Use pre-installed package instead of building from source
+- Final `.`: Install to current directory
+
+### Environment Activation
+
+After successful installation, activate the Herwig environment:
+
+```bash
+source bin/activate
+```
+
+To deactivate:
+
+```bash
+deactivate
+```
+
+### Troubleshooting
+
+If you encounter errors not listed above:
+
+1. Check Homebrew package versions match the bootstrap command paths
+2. Ensure Python virtual environment is activated
+3. Verify `bin/` directory exists
+4. Confirm GSL symlink is in place
+5. Review the detailed error messages in the terminal
+
+### Contributing
+
+If you encounter additional errors or find better solutions, please contact the authors or contribute to this documentation.
+
+---
+
+## References
+
+- **Herwig Official Documentation:** https://herwig.hepforge.org
+- **Bootstrap Installation Guide:** https://herwig.hepforge.org/tutorials/installation/
+- **Homebrew:** https://brew.sh
+- **uv Python Manager:** https://astral.sh/uv
