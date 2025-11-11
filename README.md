@@ -513,6 +513,9 @@ This section documents the Homebrew package versions used in our successful inst
 | lhapdf   | 6.5.4      | Via `brew install lhapdf`                             |
 | hepmc3   | 3.2.7_1    | Automatically installed as dependency                 |
 | Python   | 3.9.24     | Via uv (3.9.6 also tested and works)                  |
+| clang    | 17.0.0     | C Compiler via CLT                                    |
+| clang++  | 17.0.0     | C++ compiler via CLT, C++14 standard used             |
+| gfortran | 15.2.0     | gfortran compiler. Version is for Homebrew GCC. 
 
 **Check your installed versions:**
 ```bash
