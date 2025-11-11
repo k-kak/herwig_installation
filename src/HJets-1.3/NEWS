@@ -1,0 +1,8 @@
+HJets++ News							 -*- outline -*-
+================================================================================
+
+* HJets 1.1 released
+** a major bug has been fixed as the 3-jet virtual contributions
+   used a convention which has not been supported anymore by Matchbox
+
+

@@ -1,0 +1,816 @@
+// -*- C++ -*-
+//
+// AmplitudeBase.cc is a part of HJets
+// Copyright (C) 2011-2012 
+// Ken Arnold, Francisco Campanario, Terrance Figy, Simon Platzer and Malin Sjodahl
+//
+// HJets is licenced under version 2 of the GPL, see COPYING for details.
+// Please respect the MCnet academic guidelines, see GUIDELINES for details.
+//
+//
+// This is the implementation of the non-inlined, non-templated member
+// functions of the AmplitudeBase class.
+//
+
+#include "AmplitudeBase.h"
+#include "ThePEG/Interface/ClassDocumentation.h"
+#include "ThePEG/Interface/Switch.h"
+#include "ThePEG/Interface/Parameter.h"
+#include "ThePEG/EventRecord/Particle.h"
+#include "ThePEG/Repository/Repository.h"
+#include "ThePEG/Repository/UseRandom.h"
+#include "ThePEG/Repository/EventGenerator.h"
+#include "ThePEG/Utilities/DescribeClass.h"
+
+
+#include "ThePEG/Persistency/PersistentOStream.h"
+#include "ThePEG/Persistency/PersistentIStream.h"
+
+using namespace HJets;
+
+AmplitudeBase::AmplitudeBase() 
+  : MatchboxAmplitude(), complexMassScheme(true),
+    mu2Factor(1.0),
+    theKappaZ(1.0), theKappaW(1.0),
+    theStableEpsilon(1e-9) {}
+
+AmplitudeBase::~AmplitudeBase() {}
+
+bool AmplitudeBase::canHandle(const PDVector& proc) const {
+
+  int n = proc.size();
+  if ( n != nPartons() + 1 ) {
+    return false;
+  }
+
+  return HJetsProcessInfo::canHandle(proc,SM());
+
+}
+
+map<cPDVector,vector<AmplitudeInfo> >& AmplitudeBase::amplitudeInfos() {
+  static map<cPDVector,vector<AmplitudeInfo> > theAmplitudeInfos;
+  return theAmplitudeInfos;
+}
+
+map<cPDVector,map<int, pair<int, double> > >& AmplitudeBase::virtualInfos() {
+  static map<cPDVector,map<int, pair<int, double> > > theVirtualInfos;
+  return theVirtualInfos;
+}
+
+struct cfless {
+
+  inline bool operator() (const vector<size_t>& a,
+			  const vector<size_t>& b) const {
+    if ( a.size() > b.size() )
+      return true;
+
+    return less<vector<size_t> >()(a,b);
+
+  }
+
+};
+
+size_t toColorFull(const set<vector<size_t>,cfless>& cs) {
+
+  ostringstream cfids;
+  cfids << "[";
+  for ( set<vector<size_t>,cfless>::const_iterator l = cs.begin();
+	l != cs.end(); ++l ) {
+    cfids << "{";
+    for ( vector<size_t>::const_iterator i = l->begin(); i != l->end(); ++i ) {
+      cfids << *i;
+      if ( i != l->end()-1 )
+	cfids << ",";
+    }
+    cfids << "}";
+  }
+  cfids << "]";
+  string cfid = cfids.str();
+
+  if ( cfid == "[{1,2}{3,4}]" ) return 0;
+  if ( cfid == "[{1,4}{3,2}]" ) return 1;
+  if ( cfid == "[{1,5,2}{3,4}]" ) return 0;
+  if ( cfid == "[{1,5,4}{3,2}]" ) return 1;
+  if ( cfid == "[{3,5,2}{1,4}]" ) return 2;
+  if ( cfid == "[{3,5,4}{1,2}]" ) return 3;
+  if ( cfid == "[{1,5,6,2}{3,4}]" ) return 0;
+  if ( cfid == "[{1,5,6,4}{3,2}]" ) return 1;
+  if ( cfid == "[{1,6,5,2}{3,4}]" ) return 2;
+  if ( cfid == "[{1,6,5,4}{3,2}]" ) return 3;
+  if ( cfid == "[{3,5,6,2}{1,4}]" ) return 4;
+  if ( cfid == "[{3,5,6,4}{1,2}]" ) return 5;
+  if ( cfid == "[{3,6,5,2}{1,4}]" ) return 6;
+  if ( cfid == "[{3,6,5,4}{1,2}]" ) return 7;
+  if ( cfid == "[{1,5,2}{3,6,4}]" ) return 8;
+  if ( cfid == "[{1,5,4}{3,6,2}]" ) return 9;
+  if ( cfid == "[{1,6,2}{3,5,4}]" ) return 10;
+  if ( cfid == "[{1,6,4}{3,5,2}]" ) return 11;
+  if ( cfid == "[{1,2}{3,4}{5,6}]" ) return 0;
+  if ( cfid == "[{1,2}{3,6}{5,4}]" ) return 1;
+  if ( cfid == "[{1,4}{3,2}{5,6}]" ) return 2;
+  if ( cfid == "[{1,4}{3,6}{5,2}]" ) return 3;
+  if ( cfid == "[{1,6}{3,2}{5,4}]" ) return 4;
+  if ( cfid == "[{1,6}{3,4}{5,2}]" ) return 5;
+
+  assert(false);
+
+  return 0;
+
+}
+
+vector<AmplitudeInfo>& AmplitudeBase::amplitudeInfo() {
+
+  const cPDVector& proc = mePartonData();
+  map<cPDVector,vector<AmplitudeInfo> >::iterator i =
+    amplitudeInfos().find(proc);
+
+  if ( i != amplitudeInfos().end() )
+    return i->second;
+
+#ifdef AMPVERBOSE
+  // --------------------------------------------------------------------------------
+  generator()->log() << "--------------------------------------------------------------------------------\n";
+  generator()->log() << "\n" << name() << "\n";
+  generator()->log() << "getting amplitudeInfo:\nfor subprocess: ";
+  for ( cPDVector::const_iterator p = mePartonData().begin();
+	p != mePartonData().end(); ++p ) {
+    generator()->log() << (**p).PDGName() << " ";
+  }
+  generator()->log() << "\ncrossed to: ";
+  size_t ampcount = 0;
+  for ( cPDVector::const_iterator p = amplitudePartonData().begin();
+	p != amplitudePartonData().end(); ++p, ++ampcount ) {
+    generator()->log() << ampcount << " : " << (**p).PDGName() 
+		       << " [" << crossingMap()[ampcount] << "] ";
+  }
+  generator()->log() << "\n" << flush;
+  // generator()->log() << "using crossing sign = "
+  //		     << crossingSign() << "\n" << flush;
+  generator()->log() << "amplitude ids map to colour basis ids as:\n" << flush;
+  for ( map<size_t,size_t>::const_iterator c = amplitudeToColourMap().begin();
+	c != amplitudeToColourMap().end(); ++c ) {
+    generator()->log() << "[" << c->first << " -> " << (c->second + 1)
+		       << "] ";
+  }
+  generator()->log() << "\n" << flush;
+  // --------------------------------------------------------------------------------
+#endif
+
+  amplitudeInfos()[proc] = 
+    HJetsProcessInfo::getConfigurations(mePartonData(),crossingMap(),SM(),complexMassScheme,
+					kappaZ(),kappaW());
+
+  i = amplitudeInfos().find(proc);
+
+  map<size_t,size_t>& cmap = amplitudeToColourMap();
+
+#ifdef AMPVERBOSE
+  // --------------------------------------------------------------------------------
+  generator()->log() << "generated amplitude info:\n\n" << flush;
+  // --------------------------------------------------------------------------------
+#endif
+
+  for ( vector<AmplitudeInfo>::iterator k = i->second.begin();
+	k != i->second.end(); ++k ) {
+
+#ifdef AMPVERBOSE
+    // --------------------------------------------------------------------------------
+    k->print(generator()->log());
+    // --------------------------------------------------------------------------------
+#endif
+
+    map<set<vector<size_t>,cfless>,double> colourStructures;
+
+    if ( !k->qqbarEmitted ) {
+      vector<size_t> ijLine;
+      ijLine.push_back(cmap[k->ijLine.first]+1);
+      if ( k->ijLineEmissions.first > 0 )
+	ijLine.push_back(cmap[k->ijLineEmissions.first]+1);
+      if ( k->ijLineEmissions.second > 0 )
+	ijLine.push_back(cmap[k->ijLineEmissions.second]+1);
+      ijLine.push_back(cmap[k->ijLine.second]+1);
+      vector<size_t> klLine;
+      klLine.push_back(cmap[k->klLine.first]+1);
+      if ( k->klLineEmissions.first > 0 )
+	klLine.push_back(cmap[k->klLineEmissions.first]+1);
+      if ( k->klLineEmissions.second > 0 )
+	klLine.push_back(cmap[k->klLineEmissions.second]+1);
+      klLine.push_back(cmap[k->klLine.second]+1);
+      set<vector<size_t>,cfless> cStructure;
+      cStructure.insert(ijLine);
+      cStructure.insert(klLine);
+      colourStructures.insert(make_pair(cStructure,1.));
+    } else {
+      if ( k->ijLineEmissions.first > 0 ) {
+	vector<size_t> klLine;
+	klLine.push_back(cmap[k->klLine.first]+1);
+	klLine.push_back(cmap[k->klLine.second]+1);
+	vector<size_t> ijLineLeading1;
+	ijLineLeading1.push_back(cmap[k->ijLine.first]+1);
+	ijLineLeading1.push_back(cmap[k->ijLineEmissions.second]+1);
+	vector<size_t> ijLineLeading2;
+	ijLineLeading2.push_back(cmap[k->ijLineEmissions.first]+1);
+	ijLineLeading2.push_back(cmap[k->ijLine.second]+1);
+	vector<size_t> ijLineSubleading1;
+	ijLineSubleading1.push_back(cmap[k->ijLine.first]+1);
+	ijLineSubleading1.push_back(cmap[k->ijLine.second]+1);
+	vector<size_t> ijLineSubleading2;
+	ijLineSubleading2.push_back(cmap[k->ijLineEmissions.first]+1);
+	ijLineSubleading2.push_back(cmap[k->ijLineEmissions.second]+1);
+	set<vector<size_t>,cfless> cStructureLeading;
+	cStructureLeading.insert(klLine);
+	cStructureLeading.insert(ijLineLeading1);
+	cStructureLeading.insert(ijLineLeading2);
+	set<vector<size_t>,cfless> cStructureSubleading;
+	cStructureSubleading.insert(klLine);
+	cStructureSubleading.insert(ijLineSubleading1);
+	cStructureSubleading.insert(ijLineSubleading2);
+	colourStructures.insert(make_pair(cStructureLeading,0.5));
+	colourStructures.insert(make_pair(cStructureSubleading,-0.5/3.));
+      }
+      if ( k->klLineEmissions.first > 0 ) {
+	vector<size_t> ijLine;
+	ijLine.push_back(cmap[k->ijLine.first]+1);
+	ijLine.push_back(cmap[k->ijLine.second]+1);
+	vector<size_t> klLineLeading1;
+	klLineLeading1.push_back(cmap[k->klLine.first]+1);
+	klLineLeading1.push_back(cmap[k->klLineEmissions.second]+1);
+	vector<size_t> klLineLeading2;
+	klLineLeading2.push_back(cmap[k->klLineEmissions.first]+1);
+	klLineLeading2.push_back(cmap[k->klLine.second]+1);
+	vector<size_t> klLineSubleading1;
+	klLineSubleading1.push_back(cmap[k->klLine.first]+1);
+	klLineSubleading1.push_back(cmap[k->klLine.second]+1);
+	vector<size_t> klLineSubleading2;
+	klLineSubleading2.push_back(cmap[k->klLineEmissions.first]+1);
+	klLineSubleading2.push_back(cmap[k->klLineEmissions.second]+1);
+	set<vector<size_t>,cfless> cStructureLeading;
+	cStructureLeading.insert(ijLine);
+	cStructureLeading.insert(klLineLeading1);
+	cStructureLeading.insert(klLineLeading2);
+	set<vector<size_t>,cfless> cStructureSubleading;
+	cStructureSubleading.insert(ijLine);
+	cStructureSubleading.insert(klLineSubleading1);
+	cStructureSubleading.insert(klLineSubleading2);
+	colourStructures.insert(make_pair(cStructureLeading,0.5));
+	colourStructures.insert(make_pair(cStructureSubleading,-0.5/3.));
+      }
+    }
+
+#ifdef AMPVERBOSE
+    // --------------------------------------------------------------------------------
+    generator()->log() << "with colour structures\n";
+
+    for ( map<set<vector<size_t>,cfless>,double>::const_iterator c = colourStructures.begin();
+	  c != colourStructures.end(); ++c ) {
+      
+      generator()->log() << "[";
+      for ( set<vector<size_t>,cfless>::const_iterator l = c->first.begin();
+	    l != c->first.end(); ++l ) {
+	generator()->log() << "{";
+	for ( vector<size_t>::const_iterator i = l->begin(); i != l->end(); ++i ) {
+	  generator()->log() << *i;
+	  if ( i != l->end()-1 )
+	    generator()->log() << ",";
+	}
+	generator()->log() << "}";
+      }
+      generator()->log() << "]";
+
+      generator()->log() << " x " << c->second << "\n";
+
+    }
+
+    generator()->log() << "\n" << flush;
+    // --------------------------------------------------------------------------------
+#endif
+
+    for ( map<set<vector<size_t>,cfless>,double>::const_iterator c = colourStructures.begin();
+	  c != colourStructures.end(); ++c ) {
+      k->colourTensors[toColorFull(c->first)] = c->second;
+    }
+
+#ifdef AMPVERBOSE
+    // --------------------------------------------------------------------------------
+    generator()->log() << "mapped to colourfull indices as\n";
+    for ( map<size_t,double>::const_iterator c = k->colourTensors.begin();
+	  c != k->colourTensors.end(); ++c ) {
+      generator()->log() << c->first << " x " << c->second
+			  << " / ";
+    }
+    generator()->log() << "\n" << flush;
+    // --------------------------------------------------------------------------------
+#endif
+
+  }
+
+#ifdef AMPVERBOSE
+  // --------------------------------------------------------------------------------
+  generator()->log() << "--------------------------------------------------------------------------------\n"
+		     << flush;
+  // --------------------------------------------------------------------------------
+#endif
+
+  return i->second;
+
+}
+
+Complex AmplitudeBase::bosonFactor(const AmplitudeInfo& c) const {
+
+  Complex ijPropagator(-sqr(c.bosonMass/amplitudeScale()),
+		       (c.bosonMass*c.bosonWidth)/sqr(amplitudeScale()));
+  Complex klPropagator = ijPropagator;
+
+  if ( c.ijLineEmissions.first < 0 && c.ijLineEmissions.second < 0 ) {
+    ijPropagator += 
+      invariant(c.ijLine.first,c.ijLine.second);
+  } else if ( c.ijLineEmissions.first > 0 && c.ijLineEmissions.second < 0 ) {
+    ijPropagator += 
+      invariant(c.ijLine.first,c.ijLine.second) +
+      invariant(c.ijLine.first,c.ijLineEmissions.first) +
+      invariant(c.ijLine.second,c.ijLineEmissions.first);
+  } else if ( c.ijLineEmissions.first > 0 && c.ijLineEmissions.second > 0 ) {
+    ijPropagator += 
+      invariant(c.ijLine.first,c.ijLine.second) +
+      invariant(c.ijLine.first,c.ijLineEmissions.first) +
+      invariant(c.ijLine.second,c.ijLineEmissions.first) +
+      invariant(c.ijLine.first,c.ijLineEmissions.second) +
+      invariant(c.ijLine.second,c.ijLineEmissions.second) +
+      invariant(c.ijLineEmissions.first,c.ijLineEmissions.second);
+  }
+
+  if ( c.klLineEmissions.first < 0 && c.klLineEmissions.second < 0 ) {
+    klPropagator += 
+      invariant(c.klLine.first,c.klLine.second);
+  } else if ( c.klLineEmissions.first > 0 && c.klLineEmissions.second < 0 ) {
+    klPropagator += 
+      invariant(c.klLine.first,c.klLine.second) +
+      invariant(c.klLine.first,c.klLineEmissions.first) +
+      invariant(c.klLine.second,c.klLineEmissions.first);
+  } else if ( c.klLineEmissions.first > 0 && c.klLineEmissions.second > 0 ) {
+    klPropagator += 
+      invariant(c.klLine.first,c.klLine.second) +
+      invariant(c.klLine.first,c.klLineEmissions.first) +
+      invariant(c.klLine.second,c.klLineEmissions.first) +
+      invariant(c.klLine.first,c.klLineEmissions.second) +
+      invariant(c.klLine.second,c.klLineEmissions.second) +
+      invariant(c.klLineEmissions.first,c.klLineEmissions.second);
+  }
+
+  if (c.boson == getParticleData(ParticleID::Z0)) {
+    return (c.higgsCoupling/amplitudeScale())/(ijPropagator*klPropagator);
+  }
+  return (c.higgsCoupling/amplitudeScale())/(ijPropagator*klPropagator);
+
+}
+
+inline bool isQuark(cPDPtr p) {
+  if (p->id() > 0 && p->id() < 7) return true;
+  return false;
+}
+
+inline bool isAntiQuark(cPDPtr p) {
+  if (p->id() < 0 && p->id() > -7) return true;
+  return false;
+}
+
+inline bool isGluon(cPDPtr p) {
+  if (p->id() == 21 ) return true;
+  return false;
+}
+
+inline bool isHiggs(cPDPtr p) {
+  if (p->id() == 25 ) return true;
+  return false;
+}
+
+inline int sign(int a) {
+  return a < 0 ? -1 : 1;
+}
+
+const map<int, pair<int, double> >& AmplitudeBase::virtualInfo() const {
+
+  const cPDVector& proc = mePartonData();
+  map<cPDVector,map<int, pair<int, double> > >::const_iterator i =
+    virtualInfos().find(proc);
+
+  if ( i != virtualInfos().end() )
+    return i->second;
+
+  vector<int> in;
+  vector<int> out;
+  int gluon = 0;
+  int higgs = 0;
+  
+  // find incoming and outgoing particles in the master topology
+  if (isQuark(proc[0])) in.push_back(1);
+  else if (isAntiQuark(proc[0])) out.push_back(-1);
+  else if (isGluon(proc[0])) gluon = -1;
+
+  if (isQuark(proc[1])) in.push_back(2);
+  else if (isAntiQuark(proc[1])) out.push_back(-2);
+  else if (isGluon(proc[1])) gluon = -2;
+
+  for (int i = 2; i != proc.size(); i++) {
+    if (isQuark(proc[i])) out.push_back(i+1);
+    if (isAntiQuark(proc[i])) in.push_back(-i-1);
+    if (isGluon(proc[i])) gluon = i+1;
+    if (isHiggs(proc[i])) higgs = i+1;
+  }
+  assert(in.size() == 2);
+  assert(out.size() == 2);
+  assert(higgs != 0);
+
+  //construct a map for the indices
+  map<int, pair<int, double> > XMap;
+  
+  for (int i = 0; i < 2; i++) {
+    XMap[2*i+1] = make_pair (abs(in[i])-1, sign(in[i]));
+  }
+  for (int i = 0; i < 2; i++) {
+    XMap[2*i+2] = make_pair(abs(out[i])-1, sign(out[i]));
+  }
+  if ( gluon != 0 ){
+    XMap[5] = make_pair(abs(gluon)-1, sign(gluon));
+    XMap[6] = make_pair(higgs-1, 1.0);
+  }
+  else
+    XMap[5] = make_pair(higgs-1, 1.0);
+
+  //swap entries 2 and 4 if they cannot be connected to the incoming partons
+  //by a t-channel diagram
+  // int one = 1; int two = 2; int three = 3; int four = 4;
+  // if (proc[XMap.find(one)->second.first]->id() % 2 * XMap.find(one)->second.second
+  //     != proc[XMap.find(two)->second.first]->id() % 2 * XMap.find(two)->second.second){
+  //     // || (abs(proc[XMap.find(one)->second.first]->id())-1) / 2
+  //     // != (abs(proc[XMap.find(two)->second.first]->id())-1) / 2) {
+  //   assert(proc[XMap.find(two)->second.first]->id() % 2 * XMap.find(two)->second.second
+  // 	   == proc[XMap.find(three)->second.first]->id() % 2 * XMap.find(three)->second.second);
+  //   assert(proc[XMap.find(one)->second.first]->id() % 2 * XMap.find(one)->second.second
+  // 	   == proc[XMap.find(four)->second.first]->id() % 2 * XMap.find(four)->second.second);
+  //   // assert((abs(proc[XMap.find(two)->second.first]->id())-1) / 2 
+  //   // 	   == (abs(proc[XMap.find(three)->second.first]->id())-1) / 2 );
+  //   // assert((abs(proc[XMap.find(one)->second.first]->id())-1) / 2 
+  //   // 	   == (abs(proc[XMap.find(four)->second.first]->id())-1) / 2 );
+  //   pair<int,double> buffer = XMap.find(four)->second;
+  //   XMap[four] = XMap.find(two)->second;
+  //   XMap[two] = buffer;
+  // }
+
+  virtualInfos()[proc] = XMap;
+
+  i = virtualInfos().find(proc);
+
+  return i->second;
+
+}
+
+bool AmplitudeBase::topologyOneIsNC() const{
+  const cPDVector& proc = mePartonData();
+  map<int, pair<int, double> > XMap = virtualInfos().find(proc)->second;
+  if (proc[XMap.find(1)->second.first]->iCharge() * XMap.find(1)->second.second
+      - proc[XMap.find(2)->second.first]->iCharge() * XMap.find(2)->second.second == ZERO
+      && (abs(proc[XMap.find(1)->second.first]->id())-1)/2
+      == (abs(proc[XMap.find(2)->second.first]->id())-1)/2){
+    assert(proc[XMap.find(3)->second.first]->iCharge() * XMap.find(3)->second.second
+	   - proc[XMap.find(4)->second.first]->iCharge() * XMap.find(4)->second.second == ZERO);
+    return true;
+  }
+  return false;
+}
+
+bool AmplitudeBase::topologyOneIsCC() const{
+  const cPDVector& proc = mePartonData();
+  map<int, pair<int, double> > XMap = virtualInfos().find(proc)->second;
+  if (abs(proc[XMap.find(1)->second.first]->iCharge() * XMap.find(1)->second.second
+  	   - proc[XMap.find(2)->second.first]->iCharge() * XMap.find(2)->second.second) == 3
+      && (abs(proc[XMap.find(1)->second.first]->id())-1)/2
+      == (abs(proc[XMap.find(2)->second.first]->id())-1)/2
+      && (abs(proc[XMap.find(3)->second.first]->id())-1)/2
+      == (abs(proc[XMap.find(4)->second.first]->id())-1)/2){
+    assert(abs(proc[XMap.find(3)->second.first]->iCharge() * XMap.find(3)->second.second
+	       - proc[XMap.find(4)->second.first]->iCharge() * XMap.find(4)->second.second) == 3);
+    return true;
+  }
+  return false;
+}
+
+bool AmplitudeBase::topologyTwoIsNC() const{
+  const cPDVector& proc = mePartonData();
+  map<int, pair<int, double> > XMap = virtualInfos().find(proc)->second;
+  if (proc[XMap.find(1)->second.first]->iCharge() * XMap.find(1)->second.second
+      - proc[XMap.find(4)->second.first]->iCharge() * XMap.find(4)->second.second == ZERO
+      && (abs(proc[XMap.find(1)->second.first]->id())-1)/2
+      == (abs(proc[XMap.find(4)->second.first]->id())-1)/2){
+    assert(proc[XMap.find(3)->second.first]->iCharge() * XMap.find(3)->second.second
+	   - proc[XMap.find(2)->second.first]->iCharge() * XMap.find(2)->second.second == ZERO);
+    return true;
+  }
+  return false;
+}
+
+bool AmplitudeBase::topologyTwoIsCC() const{
+  const cPDVector& proc = mePartonData();
+  map<int, pair<int, double> > XMap = virtualInfos().find(proc)->second;
+  if (abs(proc[XMap.find(1)->second.first]->iCharge() * XMap.find(1)->second.second
+	   - proc[XMap.find(4)->second.first]->iCharge() * XMap.find(4)->second.second) == 3
+      && (abs(proc[XMap.find(1)->second.first]->id())-1)/2
+      == (abs(proc[XMap.find(4)->second.first]->id())-1)/2
+      && (abs(proc[XMap.find(3)->second.first]->id())-1)/2
+      == (abs(proc[XMap.find(2)->second.first]->id())-1)/2){
+    assert(abs(proc[XMap.find(3)->second.first]->iCharge() * XMap.find(3)->second.second
+	       - proc[XMap.find(2)->second.first]->iCharge() * XMap.find(2)->second.second) == 3);
+    return true;
+  }
+  return false;
+}
+
+
+void AmplitudeBase::getCouplings(double* Recl1, double* Recr1, double* Recl3, double* Recr3,
+				 double* Imcl1, double* Imcr1, double* Imcl3, double* Imcr3,
+				 double* Reghvv, double* Imghvv,
+                                 double* mass, double* width, int* isVaW) const{
+
+  const cPDVector& proc = mePartonData();
+  map<int, pair<int, double> > XMap = virtualInfos().find(proc)->second;
+
+  for (int i = 0; i < 2; i++) {
+    Recl1[i]=0.0;
+    Recr1[i]=0.0;
+    Recl3[i]=0.0;
+    Recr3[i]=0.0;
+    Reghvv[i]=0.0;
+    Imcl1[i]=0.0;
+    Imcr1[i]=0.0;
+    Imcl3[i]=0.0;
+    Imcr3[i]=0.0;
+    Imghvv[i]=0.0;
+
+    mass[i]=10.0;
+    width[i]=10.0;
+    isVaW[i]=0;
+  }
+  // fix width 
+  //double gem = sqrt(4.*Constants::pi*SM().alphaEMMZ());
+  //double s2tw = SM().sin2ThetaW();
+  //double stw = sqrt(s2tw);
+  //double ctw = sqrt(1.-s2tw);
+  Energy MW = getParticleData(ParticleID::Wplus)->hardProcessMass();
+  Energy MZ = getParticleData(ParticleID::Z0)->hardProcessMass();
+ 
+  Energy WWidth = getParticleData(ParticleID::Wplus)->hardProcessWidth();
+  Energy ZWidth = getParticleData(ParticleID::Z0)->hardProcessWidth();
+
+  //cout << "Wwidth="<< WWidth/GeV << "\n";
+  //cout << "Zwidth="<< ZWidth/GeV << "\n";
+
+  complex<double> alphaQED = SM().alphaEMMZ(); 
+  complex<double> c2tw = complex<double>(1.,0.) - SM().sin2ThetaW();
+  complex<double> s2tw = SM().sin2ThetaW();
+
+  complex<double> MW2c = double(sqr(MW/GeV));
+  complex<double> MWc = sqrt(MW2c);
+  
+  complex<double> MZ2c = double(sqr(MZ/GeV));
+  complex<double> MZc = sqrt(MZ2c);   
+
+  if( complexMassScheme ){
+    MW2c = complex<double>(sqr(MW/GeV),-MW*WWidth/GeV2);
+    MWc = sqrt(MW2c);
+    
+    MZ2c = complex<double>(sqr(MZ/GeV),-MZ*ZWidth/GeV2);
+    MZc = sqrt(MZ2c);      
+    
+    c2tw = MW2c/MZ2c;
+    s2tw = complex<double>(1.,0.) - c2tw;
+
+    double GF = SM().fermiConstant()*GeV2;
+
+    alphaQED = sqrt(2.)*GF*MW2c*s2tw/Constants::pi;
+  }
+  /*cout << "s2tw= "<< s2tw << "\n"; 
+  cout << "MZc= " << MZc << "\n";
+  cout << "MWc= " << MWc << "\n";*/
+
+  complex<double> stw = sqrt(s2tw);
+  complex<double> ctw = sqrt(c2tw);
+  
+  complex <double> gem = sqrt(4.*Constants::pi*alphaQED);
+
+  
+
+  //get couplings to Z0
+  double Q = proc[XMap.find(1)->second.first]->iCharge()/3. * XMap.find(1)->second.second;
+  double I3 = proc[XMap.find(1)->second.first]->id() % 2 == 0 ? 0.5 : -0.5;
+  complex<double> CUpperR = -gem*Q*stw/ctw;
+  complex<double> CUpperL = gem*(I3-s2tw*Q)/(stw*ctw);
+  Q = proc[XMap.find(3)->second.first]->iCharge()/3. * XMap.find(3)->second.second;
+  I3 = proc[XMap.find(3)->second.first]->id() % 2 == 0 ? 0.5 : -0.5;
+  complex<double> CLowerR = -gem*Q*stw/ctw;
+  complex<double> CLowerL = gem*(I3-s2tw*Q)/(stw*ctw);
+
+  //find NC topology and fill in couplings
+
+  complex<double> ghzz = kappaZ()*gem*MZc/(stw*ctw);
+
+  if (topologyOneIsNC()) {
+    Recl1[0]=CUpperL.real();
+    Recr1[0]=CUpperR.real();
+    Recl3[0]=CLowerL.real();
+    Recr3[0]=CLowerR.real();
+    Reghvv[0]=ghzz.real();
+
+    if (complexMassScheme ){
+      Imcl1[0]=CUpperL.imag();
+      Imcr1[0]=CUpperR.imag();
+      Imcl3[0]=CLowerL.imag();
+      Imcr3[0]=CLowerR.imag();
+      Imghvv[0]=ghzz.imag();
+      //      throw "go here";
+    }
+    
+    mass[0]=MZ/GeV;
+    width[0]=ZWidth/GeV;
+    isVaW[0]=0;
+  }
+  
+  if (topologyTwoIsNC()) {
+    Recl1[1]=CUpperL.real();
+    Recr1[1]=CUpperR.real();
+    Recl3[1]=CLowerL.real();
+    Recr3[1]=CLowerR.real();
+    Reghvv[1]=ghzz.real();
+
+    if (complexMassScheme){
+      Imcl1[1]=CUpperL.imag();
+      Imcr1[1]=CUpperR.imag();
+      Imcl3[1]=CLowerL.imag();
+      Imcr3[1]=CLowerR.imag();
+      Imghvv[1]=ghzz.imag();
+    }
+    
+    mass[1]=MZ/GeV;
+    width[1]=ZWidth/GeV;
+    isVaW[1]=0;
+  }
+
+  //get couplings to W
+  CUpperL = gem/(sqrt(2.)*stw);
+  CLowerL = gem/(sqrt(2.)*stw);
+
+  complex<double> ghww = kappaW()*gem*MWc/stw;
+
+  assert(!(topologyOneIsCC() && topologyTwoIsCC()));
+
+  //find CC topology and fill in couplings
+  if (topologyOneIsCC()) {
+    
+   
+    Recl1[0]=CUpperL.real();
+    Recl3[0]=CLowerL.real();
+    Reghvv[0]=ghww.real();
+  
+    if (complexMassScheme){
+      Imcl1[0]=CUpperL.imag();
+      Imcl3[0]=CLowerL.imag();
+      Imghvv[0]=ghww.imag();
+    }
+    mass[0]=MW/GeV;
+    width[0]=WWidth/GeV;
+    isVaW[0]=1;
+  }
+  else if (topologyTwoIsCC()) {
+    
+    Recl1[1]=CUpperL.real();
+    Recl3[1]=CLowerL.real();
+    Reghvv[1]=ghww.real();
+    
+    if (complexMassScheme){
+      Imcl1[1]=CUpperL.imag();
+      Imcl3[1]=CLowerL.imag();
+      Imghvv[1]=ghww.imag();
+    }
+
+    mass[1]=MW/GeV;
+    width[1]=WWidth/GeV;
+    isVaW[1]=1;
+  }
+
+}
+
+
+// If needed, insert default implementations of virtual function defined
+// in the InterfacedBase class here (using ThePEG-interfaced-impl in Emacs).
+
+
+void AmplitudeBase::persistentOutput(PersistentOStream & os) const {
+  os << complexMassScheme << mu2Factor
+     << theKappaZ << theKappaW << theStableEpsilon;
+}
+
+void AmplitudeBase::persistentInput(PersistentIStream & is, int) {
+  is >> complexMassScheme >> mu2Factor
+     >> theKappaZ >> theKappaW >> theStableEpsilon;
+}
+
+
+// *** Attention *** The following static variable is needed for the type
+// description system in ThePEG. Please check that the template arguments
+// are correct (the class and its base class), and that the constructor
+// arguments are correct (the class name and the name of the dynamically
+// loadable library where the class implementation can be found).
+DescribeAbstractClass<AmplitudeBase,Herwig::MatchboxAmplitude>
+  describeHJetsAmplitudeBase("HJets::AmplitudeBase", "HwMatchboxBuiltin.so HJets.so");
+
+void AmplitudeBase::Init() {
+
+  static ClassDocumentation<AmplitudeBase> documentation
+    ("Helicity amplitudes for 0 -> h + jets");
+
+
+  static Switch<AmplitudeBase,bool> interfaceComplexMassScheme
+    ("ComplexMassScheme",
+     "Switch on or off the complex mass scheme.",
+     &AmplitudeBase::complexMassScheme, true, false, false);
+  static SwitchOption interfaceComplexMassSchemeOn
+    (interfaceComplexMassScheme,
+     "On",
+     "Switch on the complex mass scheme.",
+     true);
+  static SwitchOption interfaceComplexMassSchemeOff
+    (interfaceComplexMassScheme,
+     "Off",
+     "Switch off the complex mass scheme.",
+     false);
+
+  static Parameter<AmplitudeBase,double> interfaceMu2Factor
+    ("Mu2Factor",
+     "The t'Hooft scale factor to be changed for validation.",
+     &AmplitudeBase::mu2Factor, 1.0, 0.0, 0,
+     false, false, Interface::lowerlim);
+
+
+  static Parameter<AmplitudeBase,double> interfaceKappaZ
+    ("KappaZ",
+     "The factor to rescale the HZZ coupling.",
+     &AmplitudeBase::theKappaZ, 1.0, 0, 0,
+     false, false, Interface::nolimits);
+
+  static Parameter<AmplitudeBase,double> interfaceKappaW
+    ("KappaW",
+     "The factor to rescale the HWW coupling.",
+     &AmplitudeBase::theKappaW, 1.0, 0, 0,
+     false, false, Interface::nolimits);
+
+
+  static Parameter<AmplitudeBase,double> interfaceStableEpsilon
+    ("StableEpsilon",
+     "The threshold for unstable point classification.",
+     &AmplitudeBase::theStableEpsilon, 1e-9, 0.0, 0,
+     false, false, Interface::lowerlim);
+
+}
+
+namespace HJets {
+
+  struct Banner {
+
+    Banner() {
+      cout << "################################################################################\n"
+	   << "#                                                                              #\n"
+	   << "#  HJets++ 1.1                                                                 #\n"
+	   << "#  ==========================================================================  #\n"
+	   << "#                                A Matchbox plugin for electroweak Higgs plus  #\n"
+	   << "#                                     two and three jet production at NLO QCD  #\n"
+	   << "#                                                                              #\n"
+	   << "#                                                                              #\n"
+	   << "#  (C) 2012-2014 The HJets++ collaboration                                     #\n"
+	   << "#                ------------------------------------------------------------  #\n"
+	   << "#                Francisco Campanario <francisco.campanario@ific.uv.es>        #\n"
+	   << "#                Terrance M. Figy <terrance.figy@wichita.edu>                  #\n"
+	   << "#                Simon Platzer <simon.plaetzer@desy.de>                        #\n"
+	   << "#                Malin Sjodahl <malin.sjodahl@thep.lu.se>                      #\n"
+	   << "#                ------------------------------------------------------------  #\n"
+	   << "#                                                                              #\n"
+	   << "#                                                                              #\n"
+	   << "#  ==========================================================================  #\n"
+	   << "#                                                                              #\n"
+	   << "#  HJets++ is licenced under version 2 of the GPL, see COPYING for details.    #\n"
+	   << "#  Please respect the MCnet academic guidelines, see GUIDELINES for details.   #\n"
+	   << "#                                                                              #\n"
+	   << "#  When using HJets++ please cite:                                             #\n"
+	   << "#                                                                              #\n"
+	   << "#  F. Campanario, T.M. Figy, S. Platzer and M. Sjodahl:                        #\n"
+	   << "#  'Electroweak Higgs plus Three Jet Production at NLO QCD',                   #\n"
+	   << "#  Phys.Rev.Lett. 111 (2013) 211802, arXiv:1308.2932 [hep-ph]                  #\n"
+	   << "#                                                                              #\n"
+	   << "################################################################################\n"
+	   << flush;
+      Repository::appendReadDir("/Users/user/phd/herwig_gh/./share/HJets");
+    }
+
+  };
+
+}
+
+HJets::Banner hjetsbanner;

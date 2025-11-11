@@ -1,0 +1,33 @@
+# -*- Makefile -*- (for emacs)
+# src/Makefile-UserModules.  Generated from Makefile-UserModules.in by configure.
+#
+# Herwig 7.3.0
+#
+# This Makefile is intended for compiling Herwig plugins
+# You can find example plugins in the Contrib directory
+#
+# This Makefile received very little testing, 
+# any bug reports are very welcome!
+#
+
+#
+# C++ flags
+# 
+CXX = /usr/bin/clang++ -std=c++14
+
+CXXFLAGS = -g -W -Wall -O2 -DBOOST_UBLAS_NDEBUG
+
+# add additional package header directories here
+CPPFLAGS = -I/Users/user/phd/herwig_gh/./include -I/opt/homebrew/Cellar/thepeg/2.3.0_1//include -I/opt/homebrew/Cellar/gsl/2.8//include
+
+# add additional libraries here
+LDFLAGS = -Wl,-undefined,dynamic_lookup
+
+ALLCCFILES=$(shell echo *.cc)
+all : $(ALLCCFILES:.cc=.so)
+
+%.so : %.cc %.h 
+	$(CXX) -bundle -fPIC $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $< -o $@  
+
+clean:
+	rm -f $(ALLCCFILES:.cc=.so)

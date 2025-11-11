@@ -1,0 +1,984 @@
+       subroutine H3j66T(M,p1,p2,p3,p4,p5,p6,barpsi_p1,psi_p6,barpsi_p2
+     &   ,psi_p4,mup3,musq,comp,result,resultn,Div)
+       IMPLICIT NONE
+      Complex*16 SMB(95),Fa(40),F(206)
+       Complex*16 SMB0(16),SMB11(0:3),SMB12(0:3),SMB13(0:3),SMB14(0:3)
+      Complex*16 SMB1(38)
+      Real*8 FI(206),FR(206)
+      Complex*16 barpsi_p1_P(2),psi_p6_P(2),barpsi_p2_P(2),psi_p4_P(2) 
+       Complex*16 barpsi_p1_M(2),psi_p6_M(2),barpsi_p2_M(2),psi_p4_M(2)
+       Complex*16 barpsi_p1(4),psi_p6(4),barpsi_p2(4),psi_p4(4)
+       Real*8 P(169)
+       Complex*16  SC1c,SC1r, SC3crr,SC3ccr,SC3crc,SC3ccc,SC3rrc,SC3rrr, SC5ccrrr,SC5ccrrc
+       EXTERNAL    SC1c,SC1r, SC3crr,SC3ccr,SC3crc,SC3ccc,SC3rrc,SC3rrr, SC5ccrrr,SC5ccrrc 
+       Real*8 delta
+       External  delta
+       Complex*16 ten2cc
+       External  ten2cc
+       Complex*16 v1(0:3),v2(0:3),v3(0:3) 
+       Integer alpha_1,alpha_2,i,j,k,comp
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+c    Declaration of variables 
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+      Real*8   p1(0:3),p2(0:3),p3(0:3),p4(0:3),p5(0:3),p6(0:3)
+       Complex*16   mup3(0:3),mup4(0:3)
+       Complex*16   p1mup3, p1mup4, p2mup3, p2mup4, p3mup3, p3mup4, 
+     -          p4mup3, p4mup4, p5mup3, p5mup4, p6mup3, p6mup4
+       Complex*16   mup3mup4
+       Real*8 dotrr
+       Complex*16 A0finG,B0finG,C0finG,D0finG,E0finG,F0finG
+       EXTERNAL dotrr,A0finG,B0finG,C0finG,D0finG,E0finG,F0finG
+        Real*8   p1sq, p1p2, p1p3, p1p4, p1p5,p1p6 
+       Real*8   p2sq, p2p3, p2p4, p2p5 
+       Real*8   p3sq, p3p4, p3p5 
+       Real*8   p4sq, p4p5 
+       Real*8   p5sq, p5p6 
+       Real*8   p6sq 
+       Real*8   s12, s13, s14, s15, s16 
+       Real*8   s23, s24, s25,s26 
+       Real*8   s34, s35,s36 
+       Real*8   s45,s46 
+       Real*8   s56 
+       Real*8   s123,s234,s345   
+       Real*8   p2p6,p3p6,p4p6  
+       Complex*16  A01,A02,A03,A04,A05,A06  
+       Real*8  A01R,A02R,A03R,A04R,A05R,A06R 
+       Real*8  A01I,A02I,A03I,A04I,A05I,A06I   
+       Complex*16  B012,B013,B014,B015,B016 
+       Complex*16  B023,B024,B025,B026 
+       Complex*16  B034,B035,B036 
+       Complex*16  B045,B046 
+       Complex*16  B056   
+       Real*8  B012R,B013R,B014R,B015R,B016R 
+       Real*8  B023R,B024R,B025R,B026R 
+       Real*8  B034R,B035R,B036R 
+       Real*8  B045R,B046R 
+       Real*8  B056R  
+       Real*8  B012I,B013I,B014I,B015I,B016I 
+       Real*8  B023I,B024I,B025I,B026I 
+       Real*8  B034I,B035I,B036I 
+       Real*8  B045I,B046I 
+       Real*8  B056I     
+       Real*8  Bij12R,Bij13R,Bij14R,Bij15R,Bij16R 
+       Real*8  Bij23R,Bij24R,Bij25R,Bij26R 
+       Real*8  Bij34R,Bij35R,Bij36R 
+       Real*8  Bij45R,Bij46R 
+       Real*8  Bij56R  
+       Real*8  Bij12I,Bij13I,Bij14I,Bij15I,Bij16I 
+       Real*8  Bij23I,Bij24I,Bij25I,Bij26I 
+       Real*8  Bij34I,Bij35I,Bij36I 
+       Real*8  Bij45I,Bij46I 
+       Real*8  Bij56I       
+       Complex*16 C0123,C0124,C0125,C0126 
+       Complex*16 C0134,C0135,C0136 
+       Complex*16 C0145,C0146 
+       Complex*16 C0156 
+       Complex*16 C0234,C0235,C0236 
+       Complex*16 C0245,C0246 
+       Complex*16 C0256 
+       Complex*16 C0345,C0346 
+       Complex*16 C0356 
+       Complex*16 C0456   
+       Real*8 C0123R,C0124R,C0125R,C0126R 
+       Real*8 C0134R,C0135R,C0136R 
+       Real*8 C0145R,C0146R 
+       Real*8 C0156R 
+       Real*8 C0234R,C0235R,C0236R 
+       Real*8 C0245R,C0246R 
+       Real*8 C0256R 
+       Real*8 C0345R,C0346R 
+       Real*8 C0356R 
+       Real*8 C0456R    
+       Real*8 C0123I,C0124I,C0125I,C0126I 
+       Real*8 C0134I,C0135I,C0136I 
+       Real*8 C0145I,C0146I 
+       Real*8 C0156I 
+       Real*8 C0234I,C0235I,C0236I 
+       Real*8 C0245I,C0246I 
+       Real*8 C0256I 
+       Real*8 C0345I,C0346I 
+       Real*8 C0356I 
+       Real*8 C0456I      
+       Real*8 C123R(4,2),C124R(4,2),C125R(4,2),C126R(4,2) 
+       Real*8 C134R(4,2),C135R(4,2),C136R(4,2) 
+       Real*8 C145R(4,2),C146R(4,2) 
+       Real*8 C156R(4,2) 
+       Real*8 C234R(4,2),C235R(4,2),C236R(4,2) 
+       Real*8 C245R(4,2),C246R(4,2) 
+       Real*8 C256R(4,2) 
+       Real*8 C345R(4,2),C346R(4,2) 
+       Real*8 C356R(4,2) 
+       Real*8 C456R(4,2)  
+       Real*8 C123I(4,2),C124I(4,2),C125I(4,2),C126I(4,2) 
+       Real*8 C134I(4,2),C135I(4,2),C136I(4,2) 
+       Real*8 C145I(4,2),C146I(4,2) 
+       Real*8 C156I(4,2) 
+       Real*8 C234I(4,2),C235I(4,2),C236I(4,2) 
+       Real*8 C245I(4,2),C246I(4,2) 
+       Real*8 C256I(4,2) 
+       Real*8 C345I(4,2),C346I(4,2) 
+       Real*8 C356I(4,2) 
+       Real*8 C456I(4,2)  
+       Complex*16  D01234,D01235,D01236 
+       Complex*16 D01245,D01246 
+       Complex*16 D01256 
+       Complex*16 D01345,D01346 
+       Complex*16 D01356 
+       Complex*16 D01456 
+       Complex*16 D02345,D02346 
+       Complex*16 D02356 
+       Complex*16 D02456 
+       Complex*16 D03456    
+       Real*8 D01234R,D01235R,D01236R 
+       Real*8 D01245R,D01246R 
+       Real*8 D01256R 
+       Real*8 D01345R,D01346R 
+       Real*8 D01356R 
+       Real*8 D01456R 
+       Real*8 D02345R,D02346R 
+       Real*8 D02356R 
+       Real*8 D02456R 
+       Real*8 D03456R  
+       Real*8 D01234I,D01235I,D01236I 
+       Real*8 D01245I,D01246I 
+       Real*8 D01256I 
+       Real*8 D01345I,D01346I 
+       Real*8 D01356I 
+       Real*8 D01456I 
+       Real*8 D02345I,D02346I 
+       Real*8 D02356I 
+       Real*8 D02456I 
+       Real*8 D03456I   
+       Real*8 D1234R(13,3),D1235R(13,3),D1236R(13,3) 
+       Real*8 D1245R(13,3),D1246R(13,3) 
+       Real*8 D1256R(13,3) 
+       Real*8 D1345R(13,3),D1346R(13,3) 
+       Real*8 D1356R(13,3) 
+       Real*8 D1456R(13,3) 
+       Real*8 D2345R(13,3),D2346R(13,3) 
+       Real*8 D2356R(13,3) 
+       Real*8 D2456R(13,3) 
+       Real*8 D3456R(13,3)   
+       Real*8 D1234I(13,3),D1235I(13,3),D1236I(13,3) 
+       Real*8 D1245I(13,3),D1246I(13,3) 
+       Real*8 D1256I(13,3) 
+       Real*8 D1345I(13,3),D1346I(13,3) 
+       Real*8 D1356I(13,3) 
+       Real*8 D1456I(13,3) 
+       Real*8 D2345I(13,3),D2346I(13,3) 
+       Real*8 D2356I(13,3) 
+       Real*8 D2456I(13,3) 
+       Real*8 D3456I(13,3)   
+       Complex*16 E012345,E012346,E012356,E012456,E013456,E023456 
+       Real*8 E012345R,E012346R,E012356R,E012456R,E013456R,E023456R 
+       Real*8 E012345I,E012346I,E012356I,E012456I,E013456I,E023456I  
+       Real*8 E12345R(46,4),E12346R(46,4),E12356R(46,4) 
+       Real*8 E12456R(46,4),E13456R(46,4),E23456R(46,4)  
+       Real*8 E12345I(46,4),E12346I(46,4),E12356I(46,4) 
+       Real*8 E12456I(46,4),E13456I(46,4),E23456I(46,4)  
+       Complex*16 F0123456 
+       Real*8 F0123456R 
+       Real*8 F0123456I 
+       Real*8 F123456R(166,5) 
+       Real*8 F123456I(166,5) 
+       Complex*16 F123456(166,5) 
+       Logical PrintB,PrintC,PrintD,PrintE,PrintF 
+      Complex*16 dotrc,dotcc,result(3),resultn
+       Real*8 musq,M
+      EXTERNAL   dotrc,dotcc
+      Integer alpha
+       COMMON/H3jFaFunctions/Fa
+       COMMON/H3jFhlFunctions/F
+      Save/H3jFhlFunctions/
+       COMMON/H3jPFunctions/P
+      Save/H3jPFunctions/
+       COMMON/H3jInvariants/p1sq,p2sq,p3sq,p4sq,p5sq,p6sq,s12,s23,s34,
+     &   s45,s56,s16,s123,s234,s345
+       COMMON/H3jFVALFunctions/F0123456R,F123456R,F0123456I,F123456I
+       COMMON/H3jEVALFunctions/ E012345R,E12345R,E012345I,E12345I, E01
+     &   2346R,E12346R,E012346I,E12346I, E012356R,E12356R,E012356I,E1
+     &   2356I, E012456R,E12456R,E012456I,E12456I, E013456R,E13456R,E
+     &   013456I,E13456I, E023456R,E23456R,E023456I,E23456I
+       COMMON/H3jDVALFunctions/ D01234R,D1234R,D01234I,D1234I, D01235R
+     &   ,D1235R,D01235I,D1235I, D01236R,D1236R,D01236I,D1236I, D0124
+     &   5R,D1245R,D01245I,D1245I, D01246R,D1246R,D01246I,D1246I, D01
+     &   256R,D1256R,D01256I,D1256I, D01345R,D1345R,D01345I,D1345I, D
+     &   01346R,D1346R,D01346I,D1346I, D01356R,D1356R,D01356I,D1356I,
+     &    D01456R,D1456R,D01456I,D1456I, D02345R,D2345R,D02345I,D2345
+     &   I, D02346R,D2346R,D02346I,D2346I, D02356R,D2356R,D02356I,D23
+     &   56I, D02456R,D2456R,D02456I,D2456I, D03456R,D3456R,D03456I,D
+     &   3456I
+       COMMON/H3jCVALFunctions/ C0123R,C123R,C0123I,C123I, C0124R,C124
+     &   R,C0124I,C124I, C0125R,C125R,C0125I,C125I, C0126R,C126R,C012
+     &   6I,C126I, C0134R,C134R,C0134I,C134I, C0135R,C135R,C0135I,C13
+     &   5I, C0136R,C136R,C0136I,C136I, C0145R,C145R,C0145I,C145I, C0
+     &   146R,C146R,C0146I,C146I, C0156R,C156R,C0156I,C156I, C0234R,C
+     &   234R,C0234I,C234I, C0235R,C235R,C0235I,C235I, C0236R,C236R,C
+     &   0236I,C236I, C0245R,C245R,C0245I,C245I, C0246R,C246R,C0246I,
+     &   C246I, C0256R,C256R,C0256I,C256I, C0345R,C345R,C0345I,C345I,
+     &    C0346R,C346R,C0346I,C346I, C0356R,C356R,C0356I,C356I, C0456
+     &   R,C456R,C0456I,C456I
+       COMMON/H3jBVALFunctions/ B012R,B012I, B013R,B013I, B014R,B014I,
+     &    B015R,B015I, B016R,B016I, B023R,B023I, B024R,B024I, B025R,B
+     &   025I, B026R,B026I, B034R,B034I, B035R,B035I, B036R,B036I, B0
+     &   45R,B045I, B046R,B046I, B056R,B056I
+       Integer ngluon, posgluon,Div
+
+      if(Div.eq.0)then
+       call  H3j66(M,p1,p2,p3,p4,p5,p6,barpsi_p1,psi_p6,barpsi_p2
+     &   ,psi_p4,mup3,musq,comp,result,resultn)
+
+      else
+
+      call H3j66_Div(M,p1,p2,p3,p4,p5,p6,barpsi_p1,psi_p6,barpsi_p2
+     &   ,psi_p4,mup3,musq,comp,result,resultn,Div)
+      
+      endif
+      end
+
+
+
+
+
+
+
+       subroutine H3j67T(M,p1,p2,p3,p4,p5,p6,barpsi_p1,psi_p6,barpsi_p2
+     &   ,psi_p4,mup3,musq,comp,result,resultn,Div)
+       IMPLICIT NONE
+      Complex*16 SMB(95),Fa(40),F(206)
+       Complex*16 SMB0(16),SMB11(0:3),SMB12(0:3),SMB13(0:3),SMB14(0:3)
+      Complex*16 SMB1(38)
+      Real*8 FI(206),FR(206)
+      Complex*16 barpsi_p1_P(2),psi_p6_P(2),barpsi_p2_P(2),psi_p4_P(2) 
+       Complex*16 barpsi_p1_M(2),psi_p6_M(2),barpsi_p2_M(2),psi_p4_M(2)
+       Complex*16 barpsi_p1(4),psi_p6(4),barpsi_p2(4),psi_p4(4)
+       Real*8 P(169)
+       Complex*16  SC1c,SC1r, SC3crr,SC3ccr,SC3crc,SC3ccc,SC3rrc,SC3rrr, SC5ccrrr,SC5ccrrc
+       EXTERNAL    SC1c,SC1r, SC3crr,SC3ccr,SC3crc,SC3ccc,SC3rrc,SC3rrr, SC5ccrrr,SC5ccrrc 
+       Real*8 delta
+       External  delta
+       Complex*16 ten2cc
+       External  ten2cc
+       Complex*16 v1(0:3),v2(0:3),v3(0:3) 
+       Integer alpha_1,alpha_2,i,j,k,comp
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+c    Declaration of variables 
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+      Real*8   p1(0:3),p2(0:3),p3(0:3),p4(0:3),p5(0:3),p6(0:3)
+       Complex*16   mup3(0:3),mup4(0:3)
+       Complex*16   p1mup3, p1mup4, p2mup3, p2mup4, p3mup3, p3mup4, 
+     -          p4mup3, p4mup4, p5mup3, p5mup4, p6mup3, p6mup4
+       Complex*16   mup3mup4
+       Real*8 dotrr
+       Complex*16 A0finG,B0finG,C0finG,D0finG,E0finG,F0finG
+       EXTERNAL dotrr,A0finG,B0finG,C0finG,D0finG,E0finG,F0finG
+        Real*8   p1sq, p1p2, p1p3, p1p4, p1p5,p1p6 
+       Real*8   p2sq, p2p3, p2p4, p2p5 
+       Real*8   p3sq, p3p4, p3p5 
+       Real*8   p4sq, p4p5 
+       Real*8   p5sq, p5p6 
+       Real*8   p6sq 
+       Real*8   s12, s13, s14, s15, s16 
+       Real*8   s23, s24, s25,s26 
+       Real*8   s34, s35,s36 
+       Real*8   s45,s46 
+       Real*8   s56 
+       Real*8   s123,s234,s345   
+       Real*8   p2p6,p3p6,p4p6  
+       Complex*16  A01,A02,A03,A04,A05,A06  
+       Real*8  A01R,A02R,A03R,A04R,A05R,A06R 
+       Real*8  A01I,A02I,A03I,A04I,A05I,A06I   
+       Complex*16  B012,B013,B014,B015,B016 
+       Complex*16  B023,B024,B025,B026 
+       Complex*16  B034,B035,B036 
+       Complex*16  B045,B046 
+       Complex*16  B056   
+       Real*8  B012R,B013R,B014R,B015R,B016R 
+       Real*8  B023R,B024R,B025R,B026R 
+       Real*8  B034R,B035R,B036R 
+       Real*8  B045R,B046R 
+       Real*8  B056R  
+       Real*8  B012I,B013I,B014I,B015I,B016I 
+       Real*8  B023I,B024I,B025I,B026I 
+       Real*8  B034I,B035I,B036I 
+       Real*8  B045I,B046I 
+       Real*8  B056I     
+       Real*8  Bij12R,Bij13R,Bij14R,Bij15R,Bij16R 
+       Real*8  Bij23R,Bij24R,Bij25R,Bij26R 
+       Real*8  Bij34R,Bij35R,Bij36R 
+       Real*8  Bij45R,Bij46R 
+       Real*8  Bij56R  
+       Real*8  Bij12I,Bij13I,Bij14I,Bij15I,Bij16I 
+       Real*8  Bij23I,Bij24I,Bij25I,Bij26I 
+       Real*8  Bij34I,Bij35I,Bij36I 
+       Real*8  Bij45I,Bij46I 
+       Real*8  Bij56I       
+       Complex*16 C0123,C0124,C0125,C0126 
+       Complex*16 C0134,C0135,C0136 
+       Complex*16 C0145,C0146 
+       Complex*16 C0156 
+       Complex*16 C0234,C0235,C0236 
+       Complex*16 C0245,C0246 
+       Complex*16 C0256 
+       Complex*16 C0345,C0346 
+       Complex*16 C0356 
+       Complex*16 C0456   
+       Real*8 C0123R,C0124R,C0125R,C0126R 
+       Real*8 C0134R,C0135R,C0136R 
+       Real*8 C0145R,C0146R 
+       Real*8 C0156R 
+       Real*8 C0234R,C0235R,C0236R 
+       Real*8 C0245R,C0246R 
+       Real*8 C0256R 
+       Real*8 C0345R,C0346R 
+       Real*8 C0356R 
+       Real*8 C0456R    
+       Real*8 C0123I,C0124I,C0125I,C0126I 
+       Real*8 C0134I,C0135I,C0136I 
+       Real*8 C0145I,C0146I 
+       Real*8 C0156I 
+       Real*8 C0234I,C0235I,C0236I 
+       Real*8 C0245I,C0246I 
+       Real*8 C0256I 
+       Real*8 C0345I,C0346I 
+       Real*8 C0356I 
+       Real*8 C0456I      
+       Real*8 C123R(4,2),C124R(4,2),C125R(4,2),C126R(4,2) 
+       Real*8 C134R(4,2),C135R(4,2),C136R(4,2) 
+       Real*8 C145R(4,2),C146R(4,2) 
+       Real*8 C156R(4,2) 
+       Real*8 C234R(4,2),C235R(4,2),C236R(4,2) 
+       Real*8 C245R(4,2),C246R(4,2) 
+       Real*8 C256R(4,2) 
+       Real*8 C345R(4,2),C346R(4,2) 
+       Real*8 C356R(4,2) 
+       Real*8 C456R(4,2)  
+       Real*8 C123I(4,2),C124I(4,2),C125I(4,2),C126I(4,2) 
+       Real*8 C134I(4,2),C135I(4,2),C136I(4,2) 
+       Real*8 C145I(4,2),C146I(4,2) 
+       Real*8 C156I(4,2) 
+       Real*8 C234I(4,2),C235I(4,2),C236I(4,2) 
+       Real*8 C245I(4,2),C246I(4,2) 
+       Real*8 C256I(4,2) 
+       Real*8 C345I(4,2),C346I(4,2) 
+       Real*8 C356I(4,2) 
+       Real*8 C456I(4,2)  
+       Complex*16  D01234,D01235,D01236 
+       Complex*16 D01245,D01246 
+       Complex*16 D01256 
+       Complex*16 D01345,D01346 
+       Complex*16 D01356 
+       Complex*16 D01456 
+       Complex*16 D02345,D02346 
+       Complex*16 D02356 
+       Complex*16 D02456 
+       Complex*16 D03456    
+       Real*8 D01234R,D01235R,D01236R 
+       Real*8 D01245R,D01246R 
+       Real*8 D01256R 
+       Real*8 D01345R,D01346R 
+       Real*8 D01356R 
+       Real*8 D01456R 
+       Real*8 D02345R,D02346R 
+       Real*8 D02356R 
+       Real*8 D02456R 
+       Real*8 D03456R  
+       Real*8 D01234I,D01235I,D01236I 
+       Real*8 D01245I,D01246I 
+       Real*8 D01256I 
+       Real*8 D01345I,D01346I 
+       Real*8 D01356I 
+       Real*8 D01456I 
+       Real*8 D02345I,D02346I 
+       Real*8 D02356I 
+       Real*8 D02456I 
+       Real*8 D03456I   
+       Real*8 D1234R(13,3),D1235R(13,3),D1236R(13,3) 
+       Real*8 D1245R(13,3),D1246R(13,3) 
+       Real*8 D1256R(13,3) 
+       Real*8 D1345R(13,3),D1346R(13,3) 
+       Real*8 D1356R(13,3) 
+       Real*8 D1456R(13,3) 
+       Real*8 D2345R(13,3),D2346R(13,3) 
+       Real*8 D2356R(13,3) 
+       Real*8 D2456R(13,3) 
+       Real*8 D3456R(13,3)   
+       Real*8 D1234I(13,3),D1235I(13,3),D1236I(13,3) 
+       Real*8 D1245I(13,3),D1246I(13,3) 
+       Real*8 D1256I(13,3) 
+       Real*8 D1345I(13,3),D1346I(13,3) 
+       Real*8 D1356I(13,3) 
+       Real*8 D1456I(13,3) 
+       Real*8 D2345I(13,3),D2346I(13,3) 
+       Real*8 D2356I(13,3) 
+       Real*8 D2456I(13,3) 
+       Real*8 D3456I(13,3)   
+       Complex*16 E012345,E012346,E012356,E012456,E013456,E023456 
+       Real*8 E012345R,E012346R,E012356R,E012456R,E013456R,E023456R 
+       Real*8 E012345I,E012346I,E012356I,E012456I,E013456I,E023456I  
+       Real*8 E12345R(46,4),E12346R(46,4),E12356R(46,4) 
+       Real*8 E12456R(46,4),E13456R(46,4),E23456R(46,4)  
+       Real*8 E12345I(46,4),E12346I(46,4),E12356I(46,4) 
+       Real*8 E12456I(46,4),E13456I(46,4),E23456I(46,4)  
+       Complex*16 F0123456 
+       Real*8 F0123456R 
+       Real*8 F0123456I 
+       Real*8 F123456R(166,5) 
+       Real*8 F123456I(166,5) 
+       Complex*16 F123456(166,5) 
+       Logical PrintB,PrintC,PrintD,PrintE,PrintF 
+      Complex*16 dotrc,dotcc,result(3),resultn
+       Real*8 musq,M
+      EXTERNAL   dotrc,dotcc
+      Integer alpha
+       COMMON/H3jFaFunctions/Fa
+       COMMON/H3jFhlFunctions/F
+      Save/H3jFhlFunctions/
+       COMMON/H3jPFunctions/P
+      Save/H3jPFunctions/
+       COMMON/H3jInvariants/p1sq,p2sq,p3sq,p4sq,p5sq,p6sq,s12,s23,s34,
+     &   s45,s56,s16,s123,s234,s345
+       COMMON/H3jFVALFunctions/F0123456R,F123456R,F0123456I,F123456I
+       COMMON/H3jEVALFunctions/ E012345R,E12345R,E012345I,E12345I, E01
+     &   2346R,E12346R,E012346I,E12346I, E012356R,E12356R,E012356I,E1
+     &   2356I, E012456R,E12456R,E012456I,E12456I, E013456R,E13456R,E
+     &   013456I,E13456I, E023456R,E23456R,E023456I,E23456I
+       COMMON/H3jDVALFunctions/ D01234R,D1234R,D01234I,D1234I, D01235R
+     &   ,D1235R,D01235I,D1235I, D01236R,D1236R,D01236I,D1236I, D0124
+     &   5R,D1245R,D01245I,D1245I, D01246R,D1246R,D01246I,D1246I, D01
+     &   256R,D1256R,D01256I,D1256I, D01345R,D1345R,D01345I,D1345I, D
+     &   01346R,D1346R,D01346I,D1346I, D01356R,D1356R,D01356I,D1356I,
+     &    D01456R,D1456R,D01456I,D1456I, D02345R,D2345R,D02345I,D2345
+     &   I, D02346R,D2346R,D02346I,D2346I, D02356R,D2356R,D02356I,D23
+     &   56I, D02456R,D2456R,D02456I,D2456I, D03456R,D3456R,D03456I,D
+     &   3456I
+       COMMON/H3jCVALFunctions/ C0123R,C123R,C0123I,C123I, C0124R,C124
+     &   R,C0124I,C124I, C0125R,C125R,C0125I,C125I, C0126R,C126R,C012
+     &   6I,C126I, C0134R,C134R,C0134I,C134I, C0135R,C135R,C0135I,C13
+     &   5I, C0136R,C136R,C0136I,C136I, C0145R,C145R,C0145I,C145I, C0
+     &   146R,C146R,C0146I,C146I, C0156R,C156R,C0156I,C156I, C0234R,C
+     &   234R,C0234I,C234I, C0235R,C235R,C0235I,C235I, C0236R,C236R,C
+     &   0236I,C236I, C0245R,C245R,C0245I,C245I, C0246R,C246R,C0246I,
+     &   C246I, C0256R,C256R,C0256I,C256I, C0345R,C345R,C0345I,C345I,
+     &    C0346R,C346R,C0346I,C346I, C0356R,C356R,C0356I,C356I, C0456
+     &   R,C456R,C0456I,C456I
+       COMMON/H3jBVALFunctions/ B012R,B012I, B013R,B013I, B014R,B014I,
+     &    B015R,B015I, B016R,B016I, B023R,B023I, B024R,B024I, B025R,B
+     &   025I, B026R,B026I, B034R,B034I, B035R,B035I, B036R,B036I, B0
+     &   45R,B045I, B046R,B046I, B056R,B056I
+       Integer ngluon, posgluon,Div
+
+      if(Div.eq.0)then
+       call  H3j67(M,p1,p2,p3,p4,p5,p6,barpsi_p1,psi_p6,barpsi_p2
+     &   ,psi_p4,mup3,musq,comp,result,resultn)
+
+      else
+
+      call H3j67_Div(M,p1,p2,p3,p4,p5,p6,barpsi_p1,psi_p6,barpsi_p2
+     &   ,psi_p4,mup3,musq,comp,result,resultn,Div)
+      
+      endif
+      end
+
+
+
+
+       subroutine H3j76T(M,p1,p2,p3,p4,p5,p6,barpsi_p1,psi_p6,barpsi_p2
+     &   ,psi_p4,mup3,musq,comp,result,resultn,Div)
+       IMPLICIT NONE
+      Complex*16 SMB(95),Fa(40),F(206)
+       Complex*16 SMB0(16),SMB11(0:3),SMB12(0:3),SMB13(0:3),SMB14(0:3)
+      Complex*16 SMB1(38)
+      Real*8 FI(206),FR(206)
+      Complex*16 barpsi_p1_P(2),psi_p6_P(2),barpsi_p2_P(2),psi_p4_P(2) 
+       Complex*16 barpsi_p1_M(2),psi_p6_M(2),barpsi_p2_M(2),psi_p4_M(2)
+       Complex*16 barpsi_p1(4),psi_p6(4),barpsi_p2(4),psi_p4(4)
+       Real*8 P(169)
+       Complex*16  SC1c,SC1r, SC3crr,SC3ccr,SC3crc,SC3ccc,SC3rrc,SC3rrr, SC5ccrrr,SC5ccrrc
+       EXTERNAL    SC1c,SC1r, SC3crr,SC3ccr,SC3crc,SC3ccc,SC3rrc,SC3rrr, SC5ccrrr,SC5ccrrc 
+       Real*8 delta
+       External  delta
+       Complex*16 ten2cc
+       External  ten2cc
+       Complex*16 v1(0:3),v2(0:3),v3(0:3) 
+       Integer alpha_1,alpha_2,i,j,k,comp
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+c    Declaration of variables 
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+      Real*8   p1(0:3),p2(0:3),p3(0:3),p4(0:3),p5(0:3),p6(0:3)
+       Complex*16   mup3(0:3),mup4(0:3)
+       Complex*16   p1mup3, p1mup4, p2mup3, p2mup4, p3mup3, p3mup4, 
+     -          p4mup3, p4mup4, p5mup3, p5mup4, p6mup3, p6mup4
+       Complex*16   mup3mup4
+       Real*8 dotrr
+       Complex*16 A0finG,B0finG,C0finG,D0finG,E0finG,F0finG
+       EXTERNAL dotrr,A0finG,B0finG,C0finG,D0finG,E0finG,F0finG
+        Real*8   p1sq, p1p2, p1p3, p1p4, p1p5,p1p6 
+       Real*8   p2sq, p2p3, p2p4, p2p5 
+       Real*8   p3sq, p3p4, p3p5 
+       Real*8   p4sq, p4p5 
+       Real*8   p5sq, p5p6 
+       Real*8   p6sq 
+       Real*8   s12, s13, s14, s15, s16 
+       Real*8   s23, s24, s25,s26 
+       Real*8   s34, s35,s36 
+       Real*8   s45,s46 
+       Real*8   s56 
+       Real*8   s123,s234,s345   
+       Real*8   p2p6,p3p6,p4p6  
+       Complex*16  A01,A02,A03,A04,A05,A06  
+       Real*8  A01R,A02R,A03R,A04R,A05R,A06R 
+       Real*8  A01I,A02I,A03I,A04I,A05I,A06I   
+       Complex*16  B012,B013,B014,B015,B016 
+       Complex*16  B023,B024,B025,B026 
+       Complex*16  B034,B035,B036 
+       Complex*16  B045,B046 
+       Complex*16  B056   
+       Real*8  B012R,B013R,B014R,B015R,B016R 
+       Real*8  B023R,B024R,B025R,B026R 
+       Real*8  B034R,B035R,B036R 
+       Real*8  B045R,B046R 
+       Real*8  B056R  
+       Real*8  B012I,B013I,B014I,B015I,B016I 
+       Real*8  B023I,B024I,B025I,B026I 
+       Real*8  B034I,B035I,B036I 
+       Real*8  B045I,B046I 
+       Real*8  B056I     
+       Real*8  Bij12R,Bij13R,Bij14R,Bij15R,Bij16R 
+       Real*8  Bij23R,Bij24R,Bij25R,Bij26R 
+       Real*8  Bij34R,Bij35R,Bij36R 
+       Real*8  Bij45R,Bij46R 
+       Real*8  Bij56R  
+       Real*8  Bij12I,Bij13I,Bij14I,Bij15I,Bij16I 
+       Real*8  Bij23I,Bij24I,Bij25I,Bij26I 
+       Real*8  Bij34I,Bij35I,Bij36I 
+       Real*8  Bij45I,Bij46I 
+       Real*8  Bij56I       
+       Complex*16 C0123,C0124,C0125,C0126 
+       Complex*16 C0134,C0135,C0136 
+       Complex*16 C0145,C0146 
+       Complex*16 C0156 
+       Complex*16 C0234,C0235,C0236 
+       Complex*16 C0245,C0246 
+       Complex*16 C0256 
+       Complex*16 C0345,C0346 
+       Complex*16 C0356 
+       Complex*16 C0456   
+       Real*8 C0123R,C0124R,C0125R,C0126R 
+       Real*8 C0134R,C0135R,C0136R 
+       Real*8 C0145R,C0146R 
+       Real*8 C0156R 
+       Real*8 C0234R,C0235R,C0236R 
+       Real*8 C0245R,C0246R 
+       Real*8 C0256R 
+       Real*8 C0345R,C0346R 
+       Real*8 C0356R 
+       Real*8 C0456R    
+       Real*8 C0123I,C0124I,C0125I,C0126I 
+       Real*8 C0134I,C0135I,C0136I 
+       Real*8 C0145I,C0146I 
+       Real*8 C0156I 
+       Real*8 C0234I,C0235I,C0236I 
+       Real*8 C0245I,C0246I 
+       Real*8 C0256I 
+       Real*8 C0345I,C0346I 
+       Real*8 C0356I 
+       Real*8 C0456I      
+       Real*8 C123R(4,2),C124R(4,2),C125R(4,2),C126R(4,2) 
+       Real*8 C134R(4,2),C135R(4,2),C136R(4,2) 
+       Real*8 C145R(4,2),C146R(4,2) 
+       Real*8 C156R(4,2) 
+       Real*8 C234R(4,2),C235R(4,2),C236R(4,2) 
+       Real*8 C245R(4,2),C246R(4,2) 
+       Real*8 C256R(4,2) 
+       Real*8 C345R(4,2),C346R(4,2) 
+       Real*8 C356R(4,2) 
+       Real*8 C456R(4,2)  
+       Real*8 C123I(4,2),C124I(4,2),C125I(4,2),C126I(4,2) 
+       Real*8 C134I(4,2),C135I(4,2),C136I(4,2) 
+       Real*8 C145I(4,2),C146I(4,2) 
+       Real*8 C156I(4,2) 
+       Real*8 C234I(4,2),C235I(4,2),C236I(4,2) 
+       Real*8 C245I(4,2),C246I(4,2) 
+       Real*8 C256I(4,2) 
+       Real*8 C345I(4,2),C346I(4,2) 
+       Real*8 C356I(4,2) 
+       Real*8 C456I(4,2)  
+       Complex*16  D01234,D01235,D01236 
+       Complex*16 D01245,D01246 
+       Complex*16 D01256 
+       Complex*16 D01345,D01346 
+       Complex*16 D01356 
+       Complex*16 D01456 
+       Complex*16 D02345,D02346 
+       Complex*16 D02356 
+       Complex*16 D02456 
+       Complex*16 D03456    
+       Real*8 D01234R,D01235R,D01236R 
+       Real*8 D01245R,D01246R 
+       Real*8 D01256R 
+       Real*8 D01345R,D01346R 
+       Real*8 D01356R 
+       Real*8 D01456R 
+       Real*8 D02345R,D02346R 
+       Real*8 D02356R 
+       Real*8 D02456R 
+       Real*8 D03456R  
+       Real*8 D01234I,D01235I,D01236I 
+       Real*8 D01245I,D01246I 
+       Real*8 D01256I 
+       Real*8 D01345I,D01346I 
+       Real*8 D01356I 
+       Real*8 D01456I 
+       Real*8 D02345I,D02346I 
+       Real*8 D02356I 
+       Real*8 D02456I 
+       Real*8 D03456I   
+       Real*8 D1234R(13,3),D1235R(13,3),D1236R(13,3) 
+       Real*8 D1245R(13,3),D1246R(13,3) 
+       Real*8 D1256R(13,3) 
+       Real*8 D1345R(13,3),D1346R(13,3) 
+       Real*8 D1356R(13,3) 
+       Real*8 D1456R(13,3) 
+       Real*8 D2345R(13,3),D2346R(13,3) 
+       Real*8 D2356R(13,3) 
+       Real*8 D2456R(13,3) 
+       Real*8 D3456R(13,3)   
+       Real*8 D1234I(13,3),D1235I(13,3),D1236I(13,3) 
+       Real*8 D1245I(13,3),D1246I(13,3) 
+       Real*8 D1256I(13,3) 
+       Real*8 D1345I(13,3),D1346I(13,3) 
+       Real*8 D1356I(13,3) 
+       Real*8 D1456I(13,3) 
+       Real*8 D2345I(13,3),D2346I(13,3) 
+       Real*8 D2356I(13,3) 
+       Real*8 D2456I(13,3) 
+       Real*8 D3456I(13,3)   
+       Complex*16 E012345,E012346,E012356,E012456,E013456,E023456 
+       Real*8 E012345R,E012346R,E012356R,E012456R,E013456R,E023456R 
+       Real*8 E012345I,E012346I,E012356I,E012456I,E013456I,E023456I  
+       Real*8 E12345R(46,4),E12346R(46,4),E12356R(46,4) 
+       Real*8 E12456R(46,4),E13456R(46,4),E23456R(46,4)  
+       Real*8 E12345I(46,4),E12346I(46,4),E12356I(46,4) 
+       Real*8 E12456I(46,4),E13456I(46,4),E23456I(46,4)  
+       Complex*16 F0123456 
+       Real*8 F0123456R 
+       Real*8 F0123456I 
+       Real*8 F123456R(166,5) 
+       Real*8 F123456I(166,5) 
+       Complex*16 F123456(166,5) 
+       Logical PrintB,PrintC,PrintD,PrintE,PrintF 
+      Complex*16 dotrc,dotcc,result(3),resultn
+       Real*8 musq,M
+      EXTERNAL   dotrc,dotcc
+      Integer alpha
+       COMMON/H3jFaFunctions/Fa
+       COMMON/H3jFhlFunctions/F
+      Save/H3jFhlFunctions/
+       COMMON/H3jPFunctions/P
+      Save/H3jPFunctions/
+       COMMON/H3jInvariants/p1sq,p2sq,p3sq,p4sq,p5sq,p6sq,s12,s23,s34,
+     &   s45,s56,s16,s123,s234,s345
+       COMMON/H3jFVALFunctions/F0123456R,F123456R,F0123456I,F123456I
+       COMMON/H3jEVALFunctions/ E012345R,E12345R,E012345I,E12345I, E01
+     &   2346R,E12346R,E012346I,E12346I, E012356R,E12356R,E012356I,E1
+     &   2356I, E012456R,E12456R,E012456I,E12456I, E013456R,E13456R,E
+     &   013456I,E13456I, E023456R,E23456R,E023456I,E23456I
+       COMMON/H3jDVALFunctions/ D01234R,D1234R,D01234I,D1234I, D01235R
+     &   ,D1235R,D01235I,D1235I, D01236R,D1236R,D01236I,D1236I, D0124
+     &   5R,D1245R,D01245I,D1245I, D01246R,D1246R,D01246I,D1246I, D01
+     &   256R,D1256R,D01256I,D1256I, D01345R,D1345R,D01345I,D1345I, D
+     &   01346R,D1346R,D01346I,D1346I, D01356R,D1356R,D01356I,D1356I,
+     &    D01456R,D1456R,D01456I,D1456I, D02345R,D2345R,D02345I,D2345
+     &   I, D02346R,D2346R,D02346I,D2346I, D02356R,D2356R,D02356I,D23
+     &   56I, D02456R,D2456R,D02456I,D2456I, D03456R,D3456R,D03456I,D
+     &   3456I
+       COMMON/H3jCVALFunctions/ C0123R,C123R,C0123I,C123I, C0124R,C124
+     &   R,C0124I,C124I, C0125R,C125R,C0125I,C125I, C0126R,C126R,C012
+     &   6I,C126I, C0134R,C134R,C0134I,C134I, C0135R,C135R,C0135I,C13
+     &   5I, C0136R,C136R,C0136I,C136I, C0145R,C145R,C0145I,C145I, C0
+     &   146R,C146R,C0146I,C146I, C0156R,C156R,C0156I,C156I, C0234R,C
+     &   234R,C0234I,C234I, C0235R,C235R,C0235I,C235I, C0236R,C236R,C
+     &   0236I,C236I, C0245R,C245R,C0245I,C245I, C0246R,C246R,C0246I,
+     &   C246I, C0256R,C256R,C0256I,C256I, C0345R,C345R,C0345I,C345I,
+     &    C0346R,C346R,C0346I,C346I, C0356R,C356R,C0356I,C356I, C0456
+     &   R,C456R,C0456I,C456I
+       COMMON/H3jBVALFunctions/ B012R,B012I, B013R,B013I, B014R,B014I,
+     &    B015R,B015I, B016R,B016I, B023R,B023I, B024R,B024I, B025R,B
+     &   025I, B026R,B026I, B034R,B034I, B035R,B035I, B036R,B036I, B0
+     &   45R,B045I, B046R,B046I, B056R,B056I
+       Integer ngluon, posgluon,Div
+
+      if(Div.eq.0)then
+       call  H3j76(M,p1,p2,p3,p4,p5,p6,barpsi_p1,psi_p6,barpsi_p2
+     &   ,psi_p4,mup3,musq,comp,result,resultn)
+
+      else
+
+      call H3j76_Div(M,p1,p2,p3,p4,p5,p6,barpsi_p1,psi_p6,barpsi_p2
+     &   ,psi_p4,mup3,musq,comp,result,resultn,Div)
+      
+      endif
+      end
+
+       subroutine H3j77T(M,p1,p2,p3,p4,p5,p6,barpsi_p1,psi_p6,barpsi_p2
+     &   ,psi_p4,mup3,musq,comp,result,resultn,Div)
+       IMPLICIT NONE
+      Complex*16 SMB(95),Fa(40),F(206)
+       Complex*16 SMB0(16),SMB11(0:3),SMB12(0:3),SMB13(0:3),SMB14(0:3)
+      Complex*16 SMB1(38)
+      Real*8 FI(206),FR(206)
+      Complex*16 barpsi_p1_P(2),psi_p6_P(2),barpsi_p2_P(2),psi_p4_P(2) 
+       Complex*16 barpsi_p1_M(2),psi_p6_M(2),barpsi_p2_M(2),psi_p4_M(2)
+       Complex*16 barpsi_p1(4),psi_p6(4),barpsi_p2(4),psi_p4(4)
+       Real*8 P(169)
+       Complex*16  SC1c,SC1r, SC3crr,SC3ccr,SC3crc,SC3ccc,SC3rrc,SC3rrr, SC5ccrrr,SC5ccrrc
+       EXTERNAL    SC1c,SC1r, SC3crr,SC3ccr,SC3crc,SC3ccc,SC3rrc,SC3rrr, SC5ccrrr,SC5ccrrc 
+       Real*8 delta
+       External  delta
+       Complex*16 ten2cc
+       External  ten2cc
+       Complex*16 v1(0:3),v2(0:3),v3(0:3) 
+       Integer alpha_1,alpha_2,i,j,k,comp
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+c    Declaration of variables 
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+c************************************************************************************
+      Real*8   p1(0:3),p2(0:3),p3(0:3),p4(0:3),p5(0:3),p6(0:3)
+       Complex*16   mup3(0:3),mup4(0:3)
+       Complex*16   p1mup3, p1mup4, p2mup3, p2mup4, p3mup3, p3mup4, 
+     -          p4mup3, p4mup4, p5mup3, p5mup4, p6mup3, p6mup4
+       Complex*16   mup3mup4
+       Real*8 dotrr
+       Complex*16 A0finG,B0finG,C0finG,D0finG,E0finG,F0finG
+       EXTERNAL dotrr,A0finG,B0finG,C0finG,D0finG,E0finG,F0finG
+        Real*8   p1sq, p1p2, p1p3, p1p4, p1p5,p1p6 
+       Real*8   p2sq, p2p3, p2p4, p2p5 
+       Real*8   p3sq, p3p4, p3p5 
+       Real*8   p4sq, p4p5 
+       Real*8   p5sq, p5p6 
+       Real*8   p6sq 
+       Real*8   s12, s13, s14, s15, s16 
+       Real*8   s23, s24, s25,s26 
+       Real*8   s34, s35,s36 
+       Real*8   s45,s46 
+       Real*8   s56 
+       Real*8   s123,s234,s345   
+       Real*8   p2p6,p3p6,p4p6  
+       Complex*16  A01,A02,A03,A04,A05,A06  
+       Real*8  A01R,A02R,A03R,A04R,A05R,A06R 
+       Real*8  A01I,A02I,A03I,A04I,A05I,A06I   
+       Complex*16  B012,B013,B014,B015,B016 
+       Complex*16  B023,B024,B025,B026 
+       Complex*16  B034,B035,B036 
+       Complex*16  B045,B046 
+       Complex*16  B056   
+       Real*8  B012R,B013R,B014R,B015R,B016R 
+       Real*8  B023R,B024R,B025R,B026R 
+       Real*8  B034R,B035R,B036R 
+       Real*8  B045R,B046R 
+       Real*8  B056R  
+       Real*8  B012I,B013I,B014I,B015I,B016I 
+       Real*8  B023I,B024I,B025I,B026I 
+       Real*8  B034I,B035I,B036I 
+       Real*8  B045I,B046I 
+       Real*8  B056I     
+       Real*8  Bij12R,Bij13R,Bij14R,Bij15R,Bij16R 
+       Real*8  Bij23R,Bij24R,Bij25R,Bij26R 
+       Real*8  Bij34R,Bij35R,Bij36R 
+       Real*8  Bij45R,Bij46R 
+       Real*8  Bij56R  
+       Real*8  Bij12I,Bij13I,Bij14I,Bij15I,Bij16I 
+       Real*8  Bij23I,Bij24I,Bij25I,Bij26I 
+       Real*8  Bij34I,Bij35I,Bij36I 
+       Real*8  Bij45I,Bij46I 
+       Real*8  Bij56I       
+       Complex*16 C0123,C0124,C0125,C0126 
+       Complex*16 C0134,C0135,C0136 
+       Complex*16 C0145,C0146 
+       Complex*16 C0156 
+       Complex*16 C0234,C0235,C0236 
+       Complex*16 C0245,C0246 
+       Complex*16 C0256 
+       Complex*16 C0345,C0346 
+       Complex*16 C0356 
+       Complex*16 C0456   
+       Real*8 C0123R,C0124R,C0125R,C0126R 
+       Real*8 C0134R,C0135R,C0136R 
+       Real*8 C0145R,C0146R 
+       Real*8 C0156R 
+       Real*8 C0234R,C0235R,C0236R 
+       Real*8 C0245R,C0246R 
+       Real*8 C0256R 
+       Real*8 C0345R,C0346R 
+       Real*8 C0356R 
+       Real*8 C0456R    
+       Real*8 C0123I,C0124I,C0125I,C0126I 
+       Real*8 C0134I,C0135I,C0136I 
+       Real*8 C0145I,C0146I 
+       Real*8 C0156I 
+       Real*8 C0234I,C0235I,C0236I 
+       Real*8 C0245I,C0246I 
+       Real*8 C0256I 
+       Real*8 C0345I,C0346I 
+       Real*8 C0356I 
+       Real*8 C0456I      
+       Real*8 C123R(4,2),C124R(4,2),C125R(4,2),C126R(4,2) 
+       Real*8 C134R(4,2),C135R(4,2),C136R(4,2) 
+       Real*8 C145R(4,2),C146R(4,2) 
+       Real*8 C156R(4,2) 
+       Real*8 C234R(4,2),C235R(4,2),C236R(4,2) 
+       Real*8 C245R(4,2),C246R(4,2) 
+       Real*8 C256R(4,2) 
+       Real*8 C345R(4,2),C346R(4,2) 
+       Real*8 C356R(4,2) 
+       Real*8 C456R(4,2)  
+       Real*8 C123I(4,2),C124I(4,2),C125I(4,2),C126I(4,2) 
+       Real*8 C134I(4,2),C135I(4,2),C136I(4,2) 
+       Real*8 C145I(4,2),C146I(4,2) 
+       Real*8 C156I(4,2) 
+       Real*8 C234I(4,2),C235I(4,2),C236I(4,2) 
+       Real*8 C245I(4,2),C246I(4,2) 
+       Real*8 C256I(4,2) 
+       Real*8 C345I(4,2),C346I(4,2) 
+       Real*8 C356I(4,2) 
+       Real*8 C456I(4,2)  
+       Complex*16  D01234,D01235,D01236 
+       Complex*16 D01245,D01246 
+       Complex*16 D01256 
+       Complex*16 D01345,D01346 
+       Complex*16 D01356 
+       Complex*16 D01456 
+       Complex*16 D02345,D02346 
+       Complex*16 D02356 
+       Complex*16 D02456 
+       Complex*16 D03456    
+       Real*8 D01234R,D01235R,D01236R 
+       Real*8 D01245R,D01246R 
+       Real*8 D01256R 
+       Real*8 D01345R,D01346R 
+       Real*8 D01356R 
+       Real*8 D01456R 
+       Real*8 D02345R,D02346R 
+       Real*8 D02356R 
+       Real*8 D02456R 
+       Real*8 D03456R  
+       Real*8 D01234I,D01235I,D01236I 
+       Real*8 D01245I,D01246I 
+       Real*8 D01256I 
+       Real*8 D01345I,D01346I 
+       Real*8 D01356I 
+       Real*8 D01456I 
+       Real*8 D02345I,D02346I 
+       Real*8 D02356I 
+       Real*8 D02456I 
+       Real*8 D03456I   
+       Real*8 D1234R(13,3),D1235R(13,3),D1236R(13,3) 
+       Real*8 D1245R(13,3),D1246R(13,3) 
+       Real*8 D1256R(13,3) 
+       Real*8 D1345R(13,3),D1346R(13,3) 
+       Real*8 D1356R(13,3) 
+       Real*8 D1456R(13,3) 
+       Real*8 D2345R(13,3),D2346R(13,3) 
+       Real*8 D2356R(13,3) 
+       Real*8 D2456R(13,3) 
+       Real*8 D3456R(13,3)   
+       Real*8 D1234I(13,3),D1235I(13,3),D1236I(13,3) 
+       Real*8 D1245I(13,3),D1246I(13,3) 
+       Real*8 D1256I(13,3) 
+       Real*8 D1345I(13,3),D1346I(13,3) 
+       Real*8 D1356I(13,3) 
+       Real*8 D1456I(13,3) 
+       Real*8 D2345I(13,3),D2346I(13,3) 
+       Real*8 D2356I(13,3) 
+       Real*8 D2456I(13,3) 
+       Real*8 D3456I(13,3)   
+       Complex*16 E012345,E012346,E012356,E012456,E013456,E023456 
+       Real*8 E012345R,E012346R,E012356R,E012456R,E013456R,E023456R 
+       Real*8 E012345I,E012346I,E012356I,E012456I,E013456I,E023456I  
+       Real*8 E12345R(46,4),E12346R(46,4),E12356R(46,4) 
+       Real*8 E12456R(46,4),E13456R(46,4),E23456R(46,4)  
+       Real*8 E12345I(46,4),E12346I(46,4),E12356I(46,4) 
+       Real*8 E12456I(46,4),E13456I(46,4),E23456I(46,4)  
+       Complex*16 F0123456 
+       Real*8 F0123456R 
+       Real*8 F0123456I 
+       Real*8 F123456R(166,5) 
+       Real*8 F123456I(166,5) 
+       Complex*16 F123456(166,5) 
+       Logical PrintB,PrintC,PrintD,PrintE,PrintF 
+      Complex*16 dotrc,dotcc,result(3),resultn
+       Real*8 musq,M
+      EXTERNAL   dotrc,dotcc
+      Integer alpha
+       COMMON/H3jFaFunctions/Fa
+       COMMON/H3jFhlFunctions/F
+      Save/H3jFhlFunctions/
+       COMMON/H3jPFunctions/P
+      Save/H3jPFunctions/
+       COMMON/H3jInvariants/p1sq,p2sq,p3sq,p4sq,p5sq,p6sq,s12,s23,s34,
+     &   s45,s56,s16,s123,s234,s345
+       COMMON/H3jFVALFunctions/F0123456R,F123456R,F0123456I,F123456I
+       COMMON/H3jEVALFunctions/ E012345R,E12345R,E012345I,E12345I, E01
+     &   2346R,E12346R,E012346I,E12346I, E012356R,E12356R,E012356I,E1
+     &   2356I, E012456R,E12456R,E012456I,E12456I, E013456R,E13456R,E
+     &   013456I,E13456I, E023456R,E23456R,E023456I,E23456I
+       COMMON/H3jDVALFunctions/ D01234R,D1234R,D01234I,D1234I, D01235R
+     &   ,D1235R,D01235I,D1235I, D01236R,D1236R,D01236I,D1236I, D0124
+     &   5R,D1245R,D01245I,D1245I, D01246R,D1246R,D01246I,D1246I, D01
+     &   256R,D1256R,D01256I,D1256I, D01345R,D1345R,D01345I,D1345I, D
+     &   01346R,D1346R,D01346I,D1346I, D01356R,D1356R,D01356I,D1356I,
+     &    D01456R,D1456R,D01456I,D1456I, D02345R,D2345R,D02345I,D2345
+     &   I, D02346R,D2346R,D02346I,D2346I, D02356R,D2356R,D02356I,D23
+     &   56I, D02456R,D2456R,D02456I,D2456I, D03456R,D3456R,D03456I,D
+     &   3456I
+       COMMON/H3jCVALFunctions/ C0123R,C123R,C0123I,C123I, C0124R,C124
+     &   R,C0124I,C124I, C0125R,C125R,C0125I,C125I, C0126R,C126R,C012
+     &   6I,C126I, C0134R,C134R,C0134I,C134I, C0135R,C135R,C0135I,C13
+     &   5I, C0136R,C136R,C0136I,C136I, C0145R,C145R,C0145I,C145I, C0
+     &   146R,C146R,C0146I,C146I, C0156R,C156R,C0156I,C156I, C0234R,C
+     &   234R,C0234I,C234I, C0235R,C235R,C0235I,C235I, C0236R,C236R,C
+     &   0236I,C236I, C0245R,C245R,C0245I,C245I, C0246R,C246R,C0246I,
+     &   C246I, C0256R,C256R,C0256I,C256I, C0345R,C345R,C0345I,C345I,
+     &    C0346R,C346R,C0346I,C346I, C0356R,C356R,C0356I,C356I, C0456
+     &   R,C456R,C0456I,C456I
+       COMMON/H3jBVALFunctions/ B012R,B012I, B013R,B013I, B014R,B014I,
+     &    B015R,B015I, B016R,B016I, B023R,B023I, B024R,B024I, B025R,B
+     &   025I, B026R,B026I, B034R,B034I, B035R,B035I, B036R,B036I, B0
+     &   45R,B045I, B046R,B046I, B056R,B056I
+       Integer ngluon, posgluon,Div
+
+      if(Div.eq.0)then
+       call  H3j77(M,p1,p2,p3,p4,p5,p6,barpsi_p1,psi_p6,barpsi_p2
+     &   ,psi_p4,mup3,musq,comp,result,resultn)
+
+      else
+
+      call H3j77_Div(M,p1,p2,p3,p4,p5,p6,barpsi_p1,psi_p6,barpsi_p2
+     &   ,psi_p4,mup3,musq,comp,result,resultn,Div)
+      
+      endif
+      end

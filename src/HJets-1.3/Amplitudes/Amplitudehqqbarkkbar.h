@@ -1,0 +1,143 @@
+// -*- C++ -*-
+//
+// Amplitudehqqbarkkbar.h is a part of HJets
+// Copyright (C) 2011-2012 
+// Ken Arnold, Francisco Campanario, Terrance Figy, Simon Platzer and Malin Sjodahl
+//
+// HJets is licenced under version 2 of the GPL, see COPYING for details.
+// Please respect the MCnet academic guidelines, see GUIDELINES for details.
+//
+#ifndef HJets_Amplitudehqqbarkkbar_H
+#define HJets_Amplitudehqqbarkkbar_H
+//
+// This is the declaration of the Amplitudehqqbarkkbar class.
+//
+
+#include "AmplitudeBase.h"
+
+namespace HJets {
+
+using namespace ThePEG;
+using namespace Herwig;
+
+/**
+ * \brief Tree level helicity amplitudes for 0 -> h q qbar k kbar
+ */
+class Amplitudehqqbarkkbar: 
+    public AmplitudeBase {
+
+public:
+
+  /** @name Standard constructors and destructors. */
+  //@{
+  /**
+   * The default constructor.
+   */
+  Amplitudehqqbarkkbar();
+
+  /**
+   * The destructor.
+   */
+  virtual ~Amplitudehqqbarkkbar();
+  //@}
+
+public:
+
+  /**
+   * Return the number of partons attached to this amplitude.
+   */
+  virtual int nPartons() const { return 4; }
+
+  /**
+   * Calculate the tree level amplitudes for the phasespace point
+   * stored in lastXComb.
+   */
+  virtual void prepareAmplitudes(Ptr<MatchboxMEBase>::tcptr);
+
+  /**
+   * Evaluate the amplitude for the given colour tensor id and
+   * helicity assignment
+   */
+  virtual Complex evaluate(size_t, const vector<int>&, Complex&);
+
+  /**
+   * Return true, if this amplitude is capable of calculating one-loop
+   * (QCD) corrections.
+   */
+  virtual bool haveOneLoop() const { return true; }
+
+  /**
+   * Return the one-loop/tree interference.
+   */
+  virtual double oneLoopInterference() const;
+  /**
+   * Return the double pole
+   */
+  virtual double oneLoopDoublePole() const;
+
+  /**
+   * Return the single pole
+   */
+  virtual double oneLoopSinglePole() const;
+
+public:
+
+  /** @name Functions used by the persistent I/O system. */
+  //@{
+  /**
+   * Function used to write out object persistently.
+   * @param os the persistent output stream written to.
+   */
+  void persistentOutput(PersistentOStream & os) const;
+
+  /**
+   * Function used to read in object persistently.
+   * @param is the persistent input stream read from.
+   * @param version the version number of the object when written.
+   */
+  void persistentInput(PersistentIStream & is, int version);
+  //@}
+
+  /**
+   * The standard Init function used to initialize the interfaces.
+   * Called exactly once for each class by the class description system
+   * before the main function starts or
+   * when this class is dynamically loaded.
+   */
+  static void Init();
+
+protected:
+
+  /** @name Clone Methods. */
+  //@{
+  /**
+   * Make a simple clone of this object.
+   * @return a pointer to the new object.
+   */
+  virtual IBPtr clone() const;
+
+  /** Make a clone of this object, possibly modifying the cloned object
+   * to make it sane.
+   * @return a pointer to the new object.
+   */
+  virtual IBPtr fullclone() const;
+  //@}
+
+
+// If needed, insert declarations of virtual function defined in the
+// InterfacedBase class here (using ThePEG-interfaced-decl in Emacs).
+
+
+private:
+
+  /**
+   * The assignment operator is private and must never be called.
+   * In fact, it should not even be implemented.
+   */
+  Amplitudehqqbarkkbar & operator=(const Amplitudehqqbarkkbar &);
+
+};
+
+}
+
+#endif /* HJets_Amplitudehqqbarkkbar_H */

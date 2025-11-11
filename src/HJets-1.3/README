@@ -1,0 +1,44 @@
+################################################################################
+#                                                                              #
+#  HJets++ 1.3                                                                 #
+#  ==========================================================================  #
+#                                A Matchbox plugin for electroweak Higgs plus  #
+#                                     two and three jet production at NLO QCD  #
+#                                                                              #
+#                                                                              #
+#  (C) 2012-2014 The HJets++ collaboration                                     #
+#                ------------------------------------------------------------  #
+#                Francisco Campanario <francisco.campanario@ific.uv.es>        #
+#                Terrance M. Figy <terrance.figy@wichita.edu>                  #
+#                Simon Platzer <simon.plaetzer@desy.de>                        #
+#                Malin Sjodahl <malin.sjodahl@thep.lu.se>                      #
+#                ------------------------------------------------------------  #
+#                                                                              #
+#                                                                              #
+#  ==========================================================================  #
+#                                                                              #
+#  HJets++ is licenced under version 2 of the GPL, see COPYING for details.    #
+#  Please respect the MCnet academic guidelines, see GUIDELINES for details.   #
+#                                                                              #
+#  When using HJets++ please cite:                                             #
+#                                                                              #
+#  F. Campanario, T.M. Figy, S. Platzer and M. Sjodahl:                        #
+#  'Electroweak Higgs plus Three Jet Production at NLO QCD',                   #
+#  Phys.Rev.Lett. 111 (2013) 211802, arXiv:1308.2932 [hep-ph]                  #
+#                                                                              #
+################################################################################
+
+
+Installation
+============
+
+A Herwig++ installation with versions >= 3.0 (i.e. Herwig 7.0) is required to
+use HJets++
+
+--with-herwig=path
+
+informs HJets++'s configure where to look for the Herwig 7
+installation. Installation then proceeds as usual with make and make
+install. Example usage of HJets++ is provided along with the Herwig 7
+releases.
+ 
