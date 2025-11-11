@@ -1,0 +1,34 @@
+*****************************************************
+*** Herwig 7.3.0 configuration summary
+*** Please include this information in bug reports!
+***--------------------------------------------------
+*** Prefix:		/Users/user/phd/herwig_gh/.
+***
+*** BSM models:		yes
+*** UFO converter:	yes, using Python 3.9
+***
+*** Herwig debug mode:	no
+***
+*** ThePEG:		/opt/homebrew/Cellar/thepeg/2.3.0_1/
+*** ThePEG headers:	/opt/homebrew/Cellar/thepeg/2.3.0_1//include
+***
+*** GoSam:		/Users/user/phd/herwig_gh/.
+*** GoSam-Contrib:      /Users/user/phd/herwig_gh/.
+*** MadGraph:        	/Users/user/phd/herwig_gh/./opt/MG5_aMC_v3_5_1
+*** njet:		no 
+*** OpenLoops:		/Users/user/phd/herwig_gh/./opt/OpenLoops-2.1.2
+*** VBFNLO:		/Users/user/phd/herwig_gh/.
+***
+*** EvtGen:		/Users/user/phd/herwig_gh/.
+*** GSL:		/opt/homebrew/Cellar/gsl/2.8/
+*** boost:              -I/opt/homebrew/Cellar/boost/1.89.0//include
+*** Fastjet:		/opt/homebrew/Cellar/fastjet/3.4.3//bin/fastjet-config
+***
+*** Host:		aarch64-apple-darwin24.6.0
+*** CC:			Apple clang version 17.0.0 (clang-1700.0.13.5)
+*** CXX:		Apple clang version 17.0.0 (clang-1700.0.13.5)
+*** FC:			GNU Fortran (Homebrew GCC 15.2.0) 15.2.0
+***
+*** CXXFLAGS:		-O2 -DBOOST_UBLAS_NDEBUG
+*** FCFLAGS:            -g -O2 -std=legacy -ffixed-line-length-none
+*****************************************************

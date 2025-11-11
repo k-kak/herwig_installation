@@ -1,0 +1,15 @@
+prefix=/Users/user/phd/herwig_gh/.
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/gosam-contrib
+version=2.1.1
+
+Cflags: -I${includedir}
+
+Name: samurai
+Version: 2.1.1
+Description: Samurai: Scattering Amplitudes from Unitarity-based
+             Reduction Algorithms at the Integrand level
+URL: https://samurai.web.cern.ch/samurai/
+
+Libs: -L${libdir} -lsamurai

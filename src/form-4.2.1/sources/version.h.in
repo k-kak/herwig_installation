@@ -1,0 +1,6 @@
+#define REPO_VERSION       "4.2.1"
+#define REPO_REVISION      "v4.2.1"
+#define REPO_DATE          "Nov 21 2018"
+#define REPO_MAJOR_VERSION 4
+#define REPO_MINOR_VERSION 2
+#define REPO_PATCH_VERSION 1

@@ -1,0 +1,27 @@
+This file was created by the fastjet contrib configure on Tue 11 Nov 2025 01:51:16 GMT
+
+The command line invocation was
+
+    ./configure --prefix=/Users/user/phd/herwig_gh/./ --fastjet-config=/opt/homebrew/Cellar/fastjet/3.4.3//bin/fastjet-config
+
+        Centauro               v1.0.0
+        ClusteringVetoPlugin   v1.0.0
+        ConstituentSubtractor  v1.4.5
+        EnergyCorrelator       v1.3.1
+        FlavorCone             v1.0.0
+        GenericSubtractor      v1.3.1
+        JetCleanser            v1.0.1
+        JetFFMoments           v1.0.0
+        JetsWithoutJets        v1.0.0
+        LundPlane              v2.0.2
+        Nsubjettiness          v2.2.6
+        QCDAwarePlugin         v1.0.0
+        RecursiveTools         v2.0.1
+        ScJet                  v1.1.0
+        SoftKiller             v1.0.0
+        SubjetCounting         v1.0.1
+        ValenciaPlugin         v2.0.2
+        VariableR              v1.2.1
+
+Installation prefix: /Users/user/phd/herwig_gh/./
+

@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/user/phd/herwig_gh/src/evtgen_build/cmake_install.cmake",
+		"/Users/user/phd/herwig_gh/src/evtgen_build/src/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

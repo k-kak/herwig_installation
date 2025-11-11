@@ -1,0 +1,73 @@
+options API=2
+ppllj eexddx 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj eexbbx condmap=eexddx MB=0
+ppllj eexssx map=eexddx
+ppllj eexuux 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nenexddx 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nenexbbx condmap=nenexddx MB=0
+ppllj nlnlxddx map=nenexddx
+ppllj nlnlxbbx map=nenexddx
+ppllj nenexssx map=nenexddx
+ppllj nenexuux 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nlnlxuux condmap=nenexuux MB=0
+ppllj eexbbx 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nenexbbx 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj eexddx 2 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj eexbbx condmap=eexddx MB=0
+ppllj eexssx map=eexddx
+ppllj eexuux 2 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj nenexddx 2 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj nenexbbx condmap=nenexddx MB=0
+ppllj nlnlxddx map=nenexddx
+ppllj nlnlxbbx map=nenexddx
+ppllj nenexssx map=nenexddx
+ppllj nenexuux 2 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj nlnlxuux condmap=nenexuux MB=0
+ppllj eexccx 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj nenexccx 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj llxddx 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj llxbbx condmap=llxddx MB=0
+ppllj llxuux 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj llxbbx 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj neexuxd 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nexeudx 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nllxuxd 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nlxludx 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj neexcxs 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj nexecsx 1 EW=2,0 QCD=0,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj eexddxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj eexbbxg condmap=eexddxg MB=0
+ppllj eexssxg map=eexddxg
+ppllj eexuuxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nenexddxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nenexbbxg condmap=nenexddxg MB=0
+ppllj nlnlxbbxg condmap=nenexddxg MB=0
+ppllj nlnlxddxg map=nenexddxg
+ppllj nenexuuxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nlnlxuuxg map=nenexuuxg
+ppllj eexbbxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nenexbbxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj eexddxg 2 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj eexbbxg condmap=eexddxg MB=0
+ppllj eexssxg map=eexddxg
+ppllj eexuuxg 2 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj nenexddxg 2 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj nenexbbxg condmap=nenexddxg MB=0
+ppllj nlnlxbbxg condmap=nenexddxg MB=0
+ppllj nlnlxddxg map=nenexddxg
+ppllj nenexuuxg 2 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj nlnlxuuxg map=nenexuuxg
+ppllj eexccxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj nenexccxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj eexbbxg 2 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj nenexbbxg 2 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj llxddxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj llxbbxg condmap=llxddxg MB=0
+ppllj llxuuxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj llxbbxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj neexuxdg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nexeudxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj neexcxsg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj nexecsxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 ME=0 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 LeadingColour=0 POLSEL=1
+ppllj nllxuxdg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nlxludxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1

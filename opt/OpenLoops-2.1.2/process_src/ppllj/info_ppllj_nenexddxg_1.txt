@@ -1,0 +1,4 @@
+ppllj nenexddxg 1 EW=2,0 QCD=1,1 MODEL=sm OLMode=3 Type=lt SCHSF=1 CKMORDER=0 nc=3 nf=6 nfl=3 MU=0 MD=0 MS=0 MC=0 LeadingColour=0 POLSEL=1
+ppllj nenexbbxg condmap=nenexddxg MB=0
+ppllj nlnlxbbxg condmap=nenexddxg MB=0
+ppllj nlnlxddxg map=nenexddxg
