@@ -610,7 +610,7 @@ def compile(config_flags=[]) :
         flags = ["./configure","--prefix="+base_dir]
         flags += config_flags
         check_call(flags)
-    check_call(["make","-s","-j%s" % opts.ncore])
+    check_call(["make","-s","-j%s" % opts.ncore, "FFLAGS=-g -std=legacy -ffixed-line-length-none -fno-range-check", "FCFLAGS=-g -std=legacy -ffixed-line-length-none -fno-range-check"])
 
     # TODO ?? skip here if some file already exists in /lib or /bin ??
     check_call(["make","-s","install"])
